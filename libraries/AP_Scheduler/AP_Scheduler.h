@@ -177,7 +177,8 @@ private:
     // progmem list of common tasks to run
     const struct Task *_common_tasks;
 
-    // total number of tasks in _tasks and _common_tasks list
+    // total number of tasks in _tasks and _common_tasks list. 
+    //Bob: _common_tasks are from AP_Vehicle.cpp, _tasks ara from specific vehicles like Copter.cpp
     uint8_t _num_tasks;
 
     // number of tasks in _tasks list

@@ -60,7 +60,7 @@ const AP_Param::GroupInfo AP_Scheduler::var_info[] = {
     AP_GROUPEND
 };
 
-// constructor
+// constructor // Bob: constructed in AP_Vehicle.h
 AP_Scheduler::AP_Scheduler(scheduler_fastloop_fn_t fastloop_fn) :
     _fastloop_fn(fastloop_fn)
 {
@@ -85,6 +85,7 @@ AP_Scheduler *AP_Scheduler::get_singleton()
 }
 
 // initialise the scheduler
+// Bob: this is called by AP_Vehicle.cpp
 void AP_Scheduler::init(const AP_Scheduler::Task *tasks, uint8_t num_tasks, uint32_t log_performance_bit)
 {
     // grab the semaphore before we start anything

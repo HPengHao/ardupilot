@@ -11,6 +11,7 @@
 const AP_HAL::HAL& hal = AP_HAL::get_HAL();
 
 // Format characters in the format string for binary log messages
+//Bob: 1/3 define new message structure.
 struct PACKED log_TYP1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -42,12 +43,17 @@ struct PACKED log_TYP2 {
     uint64_t  Q;
 };
 
-
+// Bob: 2/3 Add enum item for new message type. 
+// should put in LogMessages in LogStructure.h for common log type or 
+// put in LoggingParameters in defines.h for
+// a specific vehicle.
 enum MyLogMessages {
     LOG_TYP1_MSG,
     LOG_TYP2_MSG,
 };
 
+//Bob: 3/3 Put new LogStructure of new type to Copter::log_structure[] in Log.cpp for a 
+//specific vehicle or to LOG_BASE_STRUCTURES in LogStructure.h for common log type.
 static const struct LogStructure log_structure[] = {
     { LOG_FORMAT_MSG,
       sizeof(log_Format),
@@ -136,7 +142,7 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages()
 
     hal.console->printf("Writing out a few messages to get formats out...");
     logger.Write_Message("Start 1");
-
+    //write log message that just defined.
     struct log_TYP1 typ1{
         LOG_PACKET_HEADER_INIT(LOG_TYP1_MSG),
         time_us : AP_HAL::micros64(),
@@ -185,8 +191,10 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages_Log_Write()
     hal.console->printf("Using log number for Log_Write %u\n", log_num);
 
     hal.console->printf("Writing out a few messages to get formats out...");
+    //
     logger.Write_Message("Start 2");
-
+    //Compose messages directly without finishing the 3 main step for 
+    //defineing a new logging type.
     logger.Write("TYPn",
                  "TimeUS,Str",
                  "Qn",

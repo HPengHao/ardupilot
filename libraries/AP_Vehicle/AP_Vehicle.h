@@ -199,7 +199,7 @@ protected:
     AP_BoardConfig_CAN BoardConfig_CAN;
 #endif
 
-    // main loop scheduler
+    // main loop scheduler // Bob: construct the scheduler
     AP_Scheduler scheduler{FUNCTOR_BIND_MEMBER(&AP_Vehicle::fast_loop, void)};
     virtual void fast_loop();
 

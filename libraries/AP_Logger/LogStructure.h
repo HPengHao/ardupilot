@@ -2673,8 +2673,8 @@ enum LogMessages : uint8_t {
     LOG_PROXIMITY_MSG,
     LOG_DF_FILE_STATS,
     LOG_SRTL_MSG,
-    LOG_ISBH_MSG,
-    LOG_ISBD_MSG,
+    LOG_ISBH_MSG, //innertial sensor batch log header.
+    LOG_ISBD_MSG, //innertial sensor batch log data. 32 samples per message.
     LOG_ASP2_MSG,
     LOG_PERFORMANCE_MSG,
     LOG_OPTFLOW_MSG,

@@ -1193,6 +1193,16 @@ struct PACKED log_OADijkstra {
     int32_t oa_lng;
 };
 
+//Bob: customized log test===============
+struct PACKED log_BOBL{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  int32_t dataA;
+  int32_t dataB;
+  char note[4];
+};
+//=======================================
+
 struct PACKED log_DSTL {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -2527,6 +2537,8 @@ struct PACKED log_Arm_Disarm {
       "EV",   "QB",           "TimeUS,Id", "s-", "F-" }, \
     { LOG_ARM_DISARM_MSG, sizeof(log_Arm_Disarm), \
       "ARM", "QBIBB", "TimeUS,ArmState,ArmChecks,Forced,Method", "s----", "F----" }, \
+    { LOG_BOBL_MSG, sizeof(log_BOBL), \
+      "BOBL", "Qiin", "TimeUS,DataA,DataB,Note", "s---", "F??-"}, \
     { LOG_ERROR_MSG, sizeof(log_Error), \
       "ERR",   "QBB",         "TimeUS,Subsys,ECode", "s--", "F--" }
 
@@ -2687,6 +2699,10 @@ enum LogMessages : uint8_t {
     LOG_OA_BENDYRULER_MSG,
     LOG_OA_DIJKSTRA_MSG,
     LOG_VISUALVEL_MSG,
+
+    //Bob: customized log=====
+    LOG_BOBL_MSG,
+    //========================
 
     _LOG_LAST_MSG_
 };

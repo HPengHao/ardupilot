@@ -130,6 +130,17 @@ bool AP_Logger_Backend::Write_Parameter(const AP_Param *ap,
     return Write_Parameter(name, ap->cast_to_float(type));
 }
 
+void AP_Logger::Write_BOBL(){
+    const struct log_BOBL pkt = {
+        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
+        time_us : AP_HAL::micros64(),
+        dataA   : 520,
+        dataB   : 521,
+        note    : "LOV"
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
 // Write an GPS packet
 void AP_Logger::Write_GPS(uint8_t i, uint64_t time_us)
 {

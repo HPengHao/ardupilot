@@ -792,6 +792,10 @@ void AP_GPS::update_instance(uint8_t instance)
         AP::logger().Write_GPS(instance);
     }
 
+    //Bob: test log data=================
+    AP::logger().Write_BOBL();
+    //===================================
+
     if (state[instance].status >= GPS_OK_FIX_3D) {
         const uint64_t now = time_epoch_usec(instance);
         if (now != 0) {

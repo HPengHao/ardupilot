@@ -10,6 +10,7 @@
 const AP_HAL::HAL& hal = AP_HAL::get_HAL();
 
 // Format characters in the format string for binary log messages
+//Bob: 1/3 define new message structure.
 struct PACKED log_TYP1 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -41,12 +42,17 @@ struct PACKED log_TYP2 {
     uint64_t  Q;
 };
 
-
+// Bob: 2/3 Add enum item for new message type. 
+// should put in LogMessages in LogStructure.h for common log type or 
+// put in LoggingParameters in defines.h for
+// a specific vehicle.
 enum MyLogMessages {
     LOG_TYP1_MSG,
     LOG_TYP2_MSG,
 };
 
+//Bob: 3/3 Put new LogStructure of new type to Copter::log_structure[] in Log.cpp for a 
+//specific vehicle or to LOG_BASE_STRUCTURES in LogStructure.h for common log type.
 static const struct LogStructure log_structure[] = {
     { LOG_TYP1_MSG,
       sizeof(log_TYP1),
@@ -118,7 +124,14 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages()
     log_num = logger.find_last_log();
     hal.console->printf("Using log number %u\n", log_num);
 
+<<<<<<< HEAD
     struct log_TYP1 typ1 = {
+=======
+    hal.console->printf("Writing out a few messages to get formats out...");
+    logger.Write_Message("Start 1");
+    //write log message that just defined.
+    struct log_TYP1 typ1{
+>>>>>>> 7ce739fdb8... add some comments
         LOG_PACKET_HEADER_INIT(LOG_TYP1_MSG),
         time_us : AP_HAL::micros64(),
         a : { -32768, 32767, 1, -1, 0, 17 }, // int16[32]
@@ -165,6 +178,7 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages_Log_Write()
     log_num = logger.find_last_log();
     hal.console->printf("Using log number for Log_Write %u\n", log_num);
 
+<<<<<<< HEAD
     logger.Write("TYP3", TYP1_LBL, TYP1_FMT,
                         AP_HAL::micros64(),
                         -17, // int8_t
@@ -180,6 +194,45 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages_Log_Write()
                         "ABCDEFGHIJKLMNOP",
                         // char[64]:
                         "ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"
+=======
+    hal.console->printf("Writing out a few messages to get formats out...");
+    //
+    logger.Write_Message("Start 2");
+    //Compose messages directly without finishing the 3 main step for 
+    //defineing a new logging type.
+    logger.Write("TYPn",
+                 "TimeUS,Str",
+                 "Qn",
+                 AP_HAL::micros64(),
+                 "ABCD");
+
+    const int16_t a[32] = { -32768, 32767, 1, -1, 0, 17 };
+
+    logger.Write("TYPa",
+                 "TimeUS,Arr",
+                 "Qa",
+                 AP_HAL::micros64(),
+                 a);
+
+    logger.Write("TYP3",
+                 TYP1_LBL,
+                 TYP1_FMT,
+                 AP_HAL::micros64(),
+                 a, // int16[32]
+                 -17, // int8_t
+                 42,  // uint8_t
+                 -12372,  // int16_t
+                 19812,   // uint16_t
+                 -98234729,   // int32_t
+                 74627293,    // uint32_t
+                 35.87654f,  // float
+                 (double)67.7393274658293,   // double
+                 "ABCD", // char[4]
+                 // char[16]:
+                 "ABCDEFGHIJKLMNOP",
+                 // char[64]:
+                 "ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"
+>>>>>>> 7ce739fdb8... add some comments
         );
 
     logger.Write("TYP4", TYP2_LBL, TYP2_FMT,

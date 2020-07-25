@@ -295,7 +295,7 @@ protected:
     }
 
     // called by subclass when data is received from the sensor, thus
-    // at the 'sensor rate'
+    // at the 'sensor rate' Bob: the highest rate.
     void _notify_new_accel_sensor_rate_sample(uint8_t instance, const Vector3f &accel);
     void _notify_new_gyro_sensor_rate_sample(uint8_t instance, const Vector3f &gyro);
 

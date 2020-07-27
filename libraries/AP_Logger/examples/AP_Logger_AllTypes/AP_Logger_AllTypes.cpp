@@ -124,14 +124,7 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages()
     log_num = logger.find_last_log();
     hal.console->printf("Using log number %u\n", log_num);
 
-<<<<<<< HEAD
     struct log_TYP1 typ1 = {
-=======
-    hal.console->printf("Writing out a few messages to get formats out...");
-    logger.Write_Message("Start 1");
-    //write log message that just defined.
-    struct log_TYP1 typ1{
->>>>>>> 7ce739fdb8... add some comments
         LOG_PACKET_HEADER_INIT(LOG_TYP1_MSG),
         time_us : AP_HAL::micros64(),
         a : { -32768, 32767, 1, -1, 0, 17 }, // int16[32]

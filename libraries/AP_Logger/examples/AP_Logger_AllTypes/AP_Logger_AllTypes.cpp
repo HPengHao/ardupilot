@@ -178,7 +178,6 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages_Log_Write()
     log_num = logger.find_last_log();
     hal.console->printf("Using log number for Log_Write %u\n", log_num);
 
-<<<<<<< HEAD
     logger.Write("TYP3", TYP1_LBL, TYP1_FMT,
                         AP_HAL::micros64(),
                         -17, // int8_t
@@ -194,45 +193,6 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages_Log_Write()
                         "ABCDEFGHIJKLMNOP",
                         // char[64]:
                         "ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"
-=======
-    hal.console->printf("Writing out a few messages to get formats out...");
-    //
-    logger.Write_Message("Start 2");
-    //Compose messages directly without finishing the 3 main step for 
-    //defineing a new logging type.
-    logger.Write("TYPn",
-                 "TimeUS,Str",
-                 "Qn",
-                 AP_HAL::micros64(),
-                 "ABCD");
-
-    const int16_t a[32] = { -32768, 32767, 1, -1, 0, 17 };
-
-    logger.Write("TYPa",
-                 "TimeUS,Arr",
-                 "Qa",
-                 AP_HAL::micros64(),
-                 a);
-
-    logger.Write("TYP3",
-                 TYP1_LBL,
-                 TYP1_FMT,
-                 AP_HAL::micros64(),
-                 a, // int16[32]
-                 -17, // int8_t
-                 42,  // uint8_t
-                 -12372,  // int16_t
-                 19812,   // uint16_t
-                 -98234729,   // int32_t
-                 74627293,    // uint32_t
-                 35.87654f,  // float
-                 (double)67.7393274658293,   // double
-                 "ABCD", // char[4]
-                 // char[16]:
-                 "ABCDEFGHIJKLMNOP",
-                 // char[64]:
-                 "ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"
->>>>>>> 7ce739fdb8... add some comments
         );
 
     logger.Write("TYP4", TYP2_LBL, TYP2_FMT,

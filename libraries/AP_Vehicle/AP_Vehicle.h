@@ -116,17 +116,6 @@ protected:
     AP_BoardConfig_CAN BoardConfig_CAN;
 #endif
 
-<<<<<<< HEAD
-=======
-    // main loop scheduler // Bob: construct the scheduler
-    AP_Scheduler scheduler{FUNCTOR_BIND_MEMBER(&AP_Vehicle::fast_loop, void)};
-    virtual void fast_loop();
-
-    // IMU variables
-    // Integration time; time last loop took to run
-    float G_Dt;
-
->>>>>>> 7ce739fdb8... add some comments
     // sensor drivers
     AP_GPS gps;
     AP_Baro barometer;

@@ -232,7 +232,7 @@ void Copter::loop()
 }
 
 
-// Main loop - 400hz
+// Main loop - 400hz //Bob: called in AP_Scheduler::loop()
 void Copter::fast_loop()
 {
     // update INS immediately to get current gyro data populated

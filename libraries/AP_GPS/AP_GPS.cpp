@@ -719,7 +719,7 @@ void AP_GPS::update_instance(uint8_t instance)
     }
 
     //Bob: test log data=================
-    AP::logger().Write_BOBL();
+    // AP::logger().Write_BOBL();
     //===================================
 
     if (state[instance].status >= GPS_OK_FIX_3D) {

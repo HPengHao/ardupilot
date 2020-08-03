@@ -154,7 +154,7 @@ MAV_RESULT Copter::mavlink_compassmot(const GCS_MAVLINK &gcs_chan)
         compass.read();
 
         // read current
-        battery.read();
+        battery.read(); //POWR, BCL
 
         // calculate scaling for throttle
         throttle_pct = (float)channel_throttle->get_control_in() / 1000.0f;

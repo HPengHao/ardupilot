@@ -346,32 +346,32 @@ void Copter::ten_hz_logging_loop()
 {
     // log attitude data if we're not already logging at the higher rate
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_ATTITUDE_FAST) && !copter.flightmode->logs_attitude()) {
-        Log_Write_Attitude();
+        Log_Write_Attitude(); //ATT, RATE, PID, RATE
     }
     // log EKF attitude data
     if (should_log(MASK_LOG_ATTITUDE_MED) || should_log(MASK_LOG_ATTITUDE_FAST)) {
-        Log_Write_EKF_POS();
+        Log_Write_EKF_POS(); //AHR2, NKF(XKF), POS, SIM
     }
     if (should_log(MASK_LOG_MOTBATT)) {
-        Log_Write_MotBatt();
+        Log_Write_MotBatt(); //MOTB
     }
     if (should_log(MASK_LOG_RCIN)) {
-        logger.Write_RCIN();
+        logger.Write_RCIN(); //RCIN
         if (rssi.enabled()) {
-            logger.Write_RSSI();
+            logger.Write_RSSI(); //RSSI
         }
     }
     if (should_log(MASK_LOG_RCOUT)) {
-        logger.Write_RCOUT();
+        logger.Write_RCOUT(); //RCOU
     }
     if (should_log(MASK_LOG_NTUN) && (flightmode->requires_GPS() || landing_with_GPS())) {
-        pos_control->write_log();
+        pos_control->write_log(); //PSC
     }
     if (should_log(MASK_LOG_IMU) || should_log(MASK_LOG_IMU_FAST) || should_log(MASK_LOG_IMU_RAW)) {
-        logger.Write_Vibration();
+        logger.Write_Vibration(); //VIBE
     }
     if (should_log(MASK_LOG_CTUN)) {
-        attitude_control->control_monitor_log();
+        attitude_control->control_monitor_log(); //CTRL
 #if PROXIMITY_ENABLED == ENABLED
         logger.Write_Proximity(g2.proximity);  // Write proximity sensor distances
 #endif
@@ -394,7 +394,7 @@ void Copter::twentyfive_hz_logging()
 
 #if HIL_MODE == HIL_MODE_DISABLED
     if (should_log(MASK_LOG_ATTITUDE_FAST)) {
-        Log_Write_EKF_POS();
+        Log_Write_EKF_POS(); //AHR2, NKF, POS, SIM
     }
 
     if (should_log(MASK_LOG_IMU)) {
@@ -404,13 +404,13 @@ void Copter::twentyfive_hz_logging()
 
 #if PRECISION_LANDING == ENABLED
     // log output
-    Log_Write_Precland();
+    Log_Write_Precland(); //PL
 #endif
 
 #if MODE_AUTOROTATE_ENABLED == ENABLED
     if (should_log(MASK_LOG_ATTITUDE_MED) || should_log(MASK_LOG_ATTITUDE_FAST)) {
         //update autorotation log
-        g2.arot.Log_Write_Autorotation();
+        g2.arot.Log_Write_Autorotation(); //AROT
     }
 #endif
 }
@@ -438,7 +438,7 @@ void Copter::three_hz_loop()
 void Copter::one_hz_loop()
 {
     if (should_log(MASK_LOG_ANY)) {
-        Log_Write_Data(DATA_AP_STATE, ap.value);
+        Log_Write_Data(DATA_AP_STATE, ap.value); //DU32
     }
 
     arming.update();
@@ -462,7 +462,7 @@ void Copter::one_hz_loop()
     SRV_Channels::enable_aux_servos();
 
     // log terrain data
-    terrain_logging();
+    terrain_logging(); //TERR
 
 #if ADSB_ENABLED == ENABLED
     adsb.set_is_flying(!ap.land_complete);
@@ -586,7 +586,7 @@ void Copter::update_altitude()
     read_barometer();
 
     if (should_log(MASK_LOG_CTUN)) {
-        Log_Write_Control_Tuning();
+        Log_Write_Control_Tuning(); //CTUN
     }
 }
 

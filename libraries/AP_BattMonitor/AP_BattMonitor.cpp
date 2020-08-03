@@ -248,8 +248,8 @@ AP_BattMonitor::read()
 
     AP_Logger *logger = AP_Logger::get_singleton();
     if (logger->should_log(_log_battery_bit)) {
-        logger->Write_Current();
-        logger->Write_Power();
+        logger->Write_Current(); //BCL
+        logger->Write_Power();//POWR
     }
 
     check_failsafes();

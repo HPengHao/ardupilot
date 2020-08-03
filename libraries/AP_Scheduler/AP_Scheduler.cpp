@@ -269,7 +269,7 @@ void AP_Scheduler::loop()
         _last_loop_time_s = (sample_time_us - _loop_timer_start_us) * 1.0e-6;
     }
 
-    // Execute the fast loop
+    // Execute the fast loop //Bob: main fast loop is here
     // ---------------------
     if (_fastloop_fn) {
         hal.util->persistent_data.scheduler_task = -2;

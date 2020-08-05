@@ -235,6 +235,8 @@ void Copter::loop()
 // Main loop - 400hz //Bob: called in AP_Scheduler::loop()
 void Copter::fast_loop()
 {
+
+    AP::logger().Write_BOBL(0);  // 0: start main loop 
     // update INS immediately to get current gyro data populated
     ins.update();
 
@@ -280,6 +282,8 @@ void Copter::fast_loop()
     if (should_log(MASK_LOG_ANY)) {
         Log_Sensor_Health();
     }
+
+    AP::logger().Write_BOBL(1); // 1: start main loop 
 }
 
 // rc_loops - reads user input from transmitter/receiver

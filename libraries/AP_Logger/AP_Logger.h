@@ -227,7 +227,7 @@ public:
     void Write_GPS(uint8_t instance, uint64_t time_us=0);
     void Write_IMU();
     //Bob: customized log==============
-    void Write_BOBL();
+    void Write_BOBL(int code);
     //=================================
     void Write_IMUDT(uint64_t time_us, uint8_t imu_mask);
     bool Write_ISBH(uint16_t seqno,

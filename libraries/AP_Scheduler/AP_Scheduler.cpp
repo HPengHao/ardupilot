@@ -255,6 +255,9 @@ float AP_Scheduler::load_average()
 
 void AP_Scheduler::loop()
 {
+
+    AP::logger().Write_BOBL(9); // 9: anchor point
+
     // wait for an INS sample
     hal.util->persistent_data.scheduler_task = -3;
     AP::ins().wait_for_sample();
@@ -336,6 +339,8 @@ void AP_Scheduler::loop()
     perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
         
     _loop_timer_start_us = sample_time_us;
+
+    AP::logger().Write_BOBL(9); // 9: anchor point
 }
 
 void AP_Scheduler::update_logging()

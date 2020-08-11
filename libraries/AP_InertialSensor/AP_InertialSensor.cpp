@@ -1406,7 +1406,7 @@ check_sample:
                 if (_new_gyro_data[i]) {
                     const uint8_t imask = (1U<<i);
                     gyro_available_mask |= imask;
-                    if (_use[i]) {
+                    if (_use[i]) { //Bob: _use means which instances are required. So do _gyro_wait_mask
                         _gyro_wait_mask |= imask;
                     } else {
                         _gyro_wait_mask &= ~imask;
@@ -1429,8 +1429,9 @@ check_sample:
             // accel and gyro samples. After that we accept at least
             // one of each
             if (wait_counter < 7) {
+                //Bob: if all the waitings(requirements) are satisfied this would be true.
                 if (gyro_available_mask &&
-                    ((gyro_available_mask & _gyro_wait_mask) == _gyro_wait_mask) &&
+                    ((gyro_available_mask & _gyro_wait_mask) == _gyro_wait_mask) && 
                     accel_available_mask &&
                     ((accel_available_mask & _accel_wait_mask) == _accel_wait_mask)) {
                     break;

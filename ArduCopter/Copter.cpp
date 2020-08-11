@@ -239,12 +239,16 @@ void Copter::fast_loop()
     AP::logger().Write_BOBL(0);  // 0: start main loop 
     // update INS immediately to get current gyro data populated
     ins.update();
-
+    
     // run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
 
+    AP::logger().Write_BOBL(2);  // 2: anchor point
+
     // send outputs to the motors library immediately
     motors_output();
+
+    AP::logger().Write_BOBL(3);  // 3: anchor point
 
     // run EKF state estimator (expensive)
     // --------------------
@@ -257,18 +261,28 @@ void Copter::fast_loop()
     #endif
 #endif //HELI_FRAME
 
+    AP::logger().Write_BOBL(4);  // 4: anchor point
+
     // Inertial Nav
     // --------------------
     read_inertia();
 
+    AP::logger().Write_BOBL(5);  // 5: anchor point
+
     // check if ekf has reset target heading or position
     check_ekf_reset();
+
+    AP::logger().Write_BOBL(6);  // 6: anchor point
 
     // run the attitude controllers
     update_flight_mode();
 
+    AP::logger().Write_BOBL(7);  // 7: anchor point
+
     // update home from EKF if necessary
     update_home_from_EKF();
+
+    AP::logger().Write_BOBL(8);  // 8: anchor point
 
     // check if we've landed or crashed
     update_land_and_crash_detectors();

@@ -405,22 +405,22 @@ private:
     float _loop_delta_t;
     float _loop_delta_t_max;
 
-    // Most recent accelerometer reading
+    // Most recent accelerometer reading // Published data (always filtered)
     Vector3f _accel[INS_MAX_INSTANCES];
     Vector3f _delta_velocity[INS_MAX_INSTANCES];
     float _delta_velocity_dt[INS_MAX_INSTANCES];
     bool _delta_velocity_valid[INS_MAX_INSTANCES];
     // delta velocity accumulator
-    Vector3f _delta_velocity_acc[INS_MAX_INSTANCES];
+    Vector3f _delta_velocity_acc[INS_MAX_INSTANCES]; //delta velocity accumulated by accelerometer readings
     // time accumulator for delta velocity accumulator
-    float _delta_velocity_acc_dt[INS_MAX_INSTANCES];
+    float _delta_velocity_acc_dt[INS_MAX_INSTANCES]; //delta velocity accumulate time
 
     // Low Pass filters for gyro and accel
     LowPassFilter2pVector3f _accel_filter[INS_MAX_INSTANCES];
     LowPassFilter2pVector3f _gyro_filter[INS_MAX_INSTANCES];
-    Vector3f _accel_filtered[INS_MAX_INSTANCES];
+    Vector3f _accel_filtered[INS_MAX_INSTANCES]; //stores the filtered data provided by sensor
     Vector3f _gyro_filtered[INS_MAX_INSTANCES];
-    bool _new_accel_data[INS_MAX_INSTANCES];
+    bool _new_accel_data[INS_MAX_INSTANCES]; //marks an existance of a new unused data
     bool _new_gyro_data[INS_MAX_INSTANCES];
 
     // optional notch filter on gyro
@@ -433,16 +433,16 @@ private:
     // the current center frequency for the notch
     float _calculated_harmonic_notch_freq_hz;
 
-    // Most recent gyro reading
+    // Most recent gyro reading // Published data (always filtered)
     Vector3f _gyro[INS_MAX_INSTANCES];
     Vector3f _delta_angle[INS_MAX_INSTANCES];
     float _delta_angle_dt[INS_MAX_INSTANCES];
     bool _delta_angle_valid[INS_MAX_INSTANCES];
     // time accumulator for delta angle accumulator
-    float _delta_angle_acc_dt[INS_MAX_INSTANCES];
-    Vector3f _delta_angle_acc[INS_MAX_INSTANCES];
+    float _delta_angle_acc_dt[INS_MAX_INSTANCES]; //accumulated time for the delta angle below
+    Vector3f _delta_angle_acc[INS_MAX_INSTANCES]; //accumulated delta angle
     Vector3f _last_delta_angle[INS_MAX_INSTANCES];
-    Vector3f _last_raw_gyro[INS_MAX_INSTANCES];
+    Vector3f _last_raw_gyro[INS_MAX_INSTANCES]; //raw unfiltered sensor reading just for gyro coning correction.(AP_InertialSensor_Backend::_notify_new_gyro_raw_sample)
 
     // bitmask indicating if a sensor is doing sensor-rate sampling:
     uint8_t _accel_sensor_rate_sampling_enabled;

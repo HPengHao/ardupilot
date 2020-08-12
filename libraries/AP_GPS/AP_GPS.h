@@ -21,6 +21,7 @@
 #include <AP_Param/AP_Param.h>
 #include "GPS_detect_state.h"
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <AP_InertialSensor/AP_InertialSensor.h>
 
 /**
    maximum number of GPS instances available on this platform. If more
@@ -465,6 +466,7 @@ protected:
 
 private:
     static AP_GPS *_singleton;
+    AP_InertialSensor * _ins_bob;
 
     // returns the desired gps update rate in milliseconds
     // this does not provide any guarantee that the GPS is updating at the requested

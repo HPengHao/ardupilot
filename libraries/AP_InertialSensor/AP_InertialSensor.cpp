@@ -457,6 +457,13 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Path: ../Filter/HarmonicNotchFilter.cpp
     AP_SUBGROUPINFO(_harmonic_notch_filter, "HNTCH_",  41, AP_InertialSensor, HarmonicNotchFilterParams),
 
+    // @Param: STLTHY_ATK
+    // @DisplayName: Stealthy attack enable
+    // @Description: To see whether the stealthy attack is enabled
+    // @User: Advanced
+    // @Values: 1: Enabled, 0: Disabled
+    AP_GROUPINFO("STLTHY_ATK",  42, AP_InertialSensor, stealthy_atk_param, 0),
+
     /*
       NOTE: parameter indexes have gaps above. When adding new
       parameters check for conflicts carefully

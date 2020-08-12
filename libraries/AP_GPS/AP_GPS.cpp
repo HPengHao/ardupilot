@@ -345,6 +345,8 @@ void AP_GPS::init(const AP_SerialManager& serial_manager)
             _rate_ms[i] = GPS_MAX_RATE_MS;
         }
     }
+
+    _ins_bob = AP_InertialSensor::get_singleton();
 }
 
 // return number of active GPS sensors. Note that if the first GPS
@@ -719,7 +721,7 @@ void AP_GPS::update_instance(uint8_t instance)
     }
 
     //Bob: test log data=================
-    // AP::logger().Write_BOBL();
+    AP::logger().Write_BOBL(16, (int)_ins_bob->stealthy_atk_param.get());
     //===================================
 
     if (state[instance].status >= GPS_OK_FIX_3D) {

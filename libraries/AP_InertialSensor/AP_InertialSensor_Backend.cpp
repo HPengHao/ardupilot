@@ -180,6 +180,10 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         _imu._gyro_last_sample_us[instance] = AP_HAL::micros64();
     }
 
+    //===========BOB LOG================
+    AP::logger().Write_BOBL(15, (int)(dt * 1000000));
+    //=================================
+
 #if AP_MODULE_SUPPORTED
     // call gyro_sample hook if any
     AP_Module::call_hook_gyro_sample(instance, dt, gyro);
@@ -355,6 +359,10 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
         dt = 1.0f / _imu._accel_raw_sample_rates[instance];
         _imu._accel_last_sample_us[instance] = AP_HAL::micros64();
     }
+
+    //===========BOB LOG================
+    AP::logger().Write_BOBL(14, (int)(dt * 1000000));
+    //=================================
 
 #if AP_MODULE_SUPPORTED
     // call accel_sample hook if any

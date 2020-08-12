@@ -339,8 +339,9 @@ void AP_Scheduler::loop()
     perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
         
     _loop_timer_start_us = sample_time_us;
-
-    AP::logger().Write_BOBL(9); // 9: anchor point
+    //===========BOB LOG================
+    AP::logger().Write_BOBL(10, (int)get_loop_rate_hz()); // 10: anchor point
+    //==================================
 }
 
 void AP_Scheduler::update_logging()

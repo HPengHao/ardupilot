@@ -141,6 +141,17 @@ void AP_Logger::Write_BOBL(int code){
     WriteBlock(&pkt, sizeof(pkt));
 }
 
+void AP_Logger::Write_BOBL(int code, int data){
+    const struct log_BOBL pkt = {
+        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
+        time_us : AP_HAL::micros64(),
+        dataA   : code,
+        dataB   : data,
+        note    : "LOV"
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
 // Write an GPS packet
 void AP_Logger::Write_GPS(uint8_t i, uint64_t time_us)
 {

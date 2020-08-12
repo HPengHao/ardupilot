@@ -1257,7 +1257,7 @@ void AP_InertialSensor::update(void)
             _backends[i]->update();
         }
 
-        // clear accumulators
+        // clear accumulators //this is the backend accumulaters (unpublished data)
         for (uint8_t i = 0; i < INS_MAX_INSTANCES; i++) {
             _delta_velocity_acc[i].zero();
             _delta_velocity_acc_dt[i] = 0;
@@ -1380,11 +1380,17 @@ void AP_InertialSensor::wait_for_sample(void)
         // we've overshot, but only by a small amount, keep on
         // schedule with no delay
         timing_printf("overshoot1 %u\n", (unsigned)(now-_next_sample_usec));
+        //===========BOB LOG================
+        AP::logger().Write_BOBL(11, (int)(now-_next_sample_usec));
+        //==================================
         _next_sample_usec += _sample_period_usec;
     } else {
         // we've overshot by a larger amount, re-zero scheduling with
         // no delay
         timing_printf("overshoot2 %u\n", (unsigned)(now-_next_sample_usec));
+        //===========BOB LOG================
+        AP::logger().Write_BOBL(12, (int)(now-_next_sample_usec));
+        //==================================
         _next_sample_usec = now + _sample_period_usec;
     }
 
@@ -1460,7 +1466,9 @@ check_sample:
         _delta_time = (now - _last_sample_usec) * 1.0e-6f;
     }
     _last_sample_usec = now;
-
+    //===========BOB LOG================
+    AP::logger().Write_BOBL(13, (int)(_delta_time*1000000));
+    //==================================
 #if 0
     {
         static uint64_t delta_time_sum;

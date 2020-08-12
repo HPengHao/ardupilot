@@ -228,6 +228,7 @@ public:
     void Write_IMU();
     //Bob: customized log==============
     void Write_BOBL(int code);
+    void Write_BOBL(int code, int data);
     //=================================
     void Write_IMUDT(uint64_t time_us, uint8_t imu_mask);
     bool Write_ISBH(uint16_t seqno,

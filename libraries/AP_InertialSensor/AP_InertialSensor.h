@@ -405,12 +405,12 @@ private:
     float _loop_delta_t;
     float _loop_delta_t_max;
 
-    // Most recent accelerometer reading // Published data (always filtered)
+    // Most recent accelerometer reading // Published data (always filtered) for front end use.
     Vector3f _accel[INS_MAX_INSTANCES];
     Vector3f _delta_velocity[INS_MAX_INSTANCES];
     float _delta_velocity_dt[INS_MAX_INSTANCES];
     bool _delta_velocity_valid[INS_MAX_INSTANCES];
-    // delta velocity accumulator
+    // delta velocity accumulator // For back end use.
     Vector3f _delta_velocity_acc[INS_MAX_INSTANCES]; //delta velocity accumulated by accelerometer readings
     // time accumulator for delta velocity accumulator
     float _delta_velocity_acc_dt[INS_MAX_INSTANCES]; //delta velocity accumulate time

@@ -484,6 +484,7 @@ bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, 
         return false;
     }
 
+    //BOBL: May be here is the reason why some logs failed
     if (!semaphore.take(1)) {
         return false;
     }
@@ -506,7 +507,7 @@ bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, 
         }
         last_messagewrite_message_sent = now;
     } else {
-        // we reserve some amount of space for critical messages:
+        // we reserve some amount of space for critical messages: //This is another reason for missing data.
         if (!is_critical && space < critical_message_reserved_space()) {
             _dropped++;
             semaphore.give();
@@ -514,7 +515,7 @@ bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, 
         }
     }
 
-    // if no room for entire message - drop it:
+    // if no room for entire message - drop it: //This is another reason for missing data.
     if (space < size) {
         hal.util->perf_count(_perf_overruns);
         _dropped++;
@@ -1100,7 +1101,9 @@ void AP_Logger_File::Write_AP_Logger_Stats_File(const struct df_stats &_stats)
         buf_space_avg   : (_stats.blocks) ? (_stats.buf_space_sigma / _stats.blocks) : 0,
 
     };
-    WriteBlock(&pkt, sizeof(pkt));
+    //WriteBlock(&pkt, sizeof(pkt));
+    //Bob: make this information critical
+    WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
 void AP_Logger_File::df_stats_gather(const uint16_t bytes_written) {

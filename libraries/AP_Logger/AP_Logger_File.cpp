@@ -949,6 +949,8 @@ void AP_Logger_File::_io_timer(void)
         // least once per 2 seconds if data is available
         return;
     }
+
+    //Bob: free space check, if disk is full, stop logging
     if (tnow - _free_space_last_check_time > _free_space_check_interval) {
         _free_space_last_check_time = tnow;
         last_io_operation = "disk_space_avail";

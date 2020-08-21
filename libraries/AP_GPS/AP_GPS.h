@@ -211,9 +211,9 @@ public:
     const Location &location(uint8_t instance) const {
         return state[instance].location;
     }
-    const Location &location() const {
-        return location(primary_instance);
-    }
+    const Location &location() const;
+
+    const Location &get_fake_location(const Location& true_loc) const;
 
     // report speed accuracy
     bool speed_accuracy(uint8_t instance, float &sacc) const;

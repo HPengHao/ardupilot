@@ -80,6 +80,8 @@ public:
     // a function called by the main thread at the main loop rate:
     void periodic();
 
+    bool check_stealthy_atk();
+
     bool calibrate_trim(float &trim_roll, float &trim_pitch);
 
     /// calibrating - returns true if the gyros or accels are currently being calibrated

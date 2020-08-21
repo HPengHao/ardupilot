@@ -604,6 +604,16 @@ void AP_InertialSensor::_start_backends()
     }
 }
 
+/* Check if the Stealthy attack is launched*/
+bool AP_InertialSensor::check_stealthy_atk()
+{
+    if(stealthy_atk_param.get() == 1){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 /* Find the N instance of the backend that has already been successfully detected */
 AP_InertialSensor_Backend *AP_InertialSensor::_find_backend(int16_t backend_id, uint8_t instance)
 {

@@ -1,5 +1,5 @@
 #include "AP_GPS.h"
-#include <random>
+//#include <random>
 #include <GCS_MAVLink/GCS.h>
 
 #define STL_ATK_TYPE 2

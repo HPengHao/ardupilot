@@ -507,7 +507,8 @@ bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, 
         }
         last_messagewrite_message_sent = now;
     } else {
-        // we reserve some amount of space for critical messages: //This is another reason for missing data.
+        // we reserve some amount of space for critical messages: 
+        //This is reason for missing data.
         if (!is_critical && space < critical_message_reserved_space()) {
             _dropped++;
             semaphore.give();
@@ -515,7 +516,8 @@ bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, 
         }
     }
 
-    // if no room for entire message - drop it: //This is another reason for missing data.
+    // if no room for entire message - drop it: 
+    //This is another reason for missing data.
     if (space < size) {
         hal.util->perf_count(_perf_overruns);
         _dropped++;

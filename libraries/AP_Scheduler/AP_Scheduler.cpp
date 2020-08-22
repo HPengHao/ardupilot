@@ -317,8 +317,9 @@ void AP_Scheduler::loop()
     // move result of AP_HAL::micros() forward:
     hal.scheduler->delay_microseconds(1);
 #endif
-
+    int log_task_not_achieved = 0;
     if (task_not_achieved > 0) {
+        log_task_not_achieved = task_not_achieved;
         // add some extra time to the budget
         extra_loop_us = MIN(extra_loop_us+100U, 5000U);
         task_not_achieved = 0;
@@ -340,7 +341,7 @@ void AP_Scheduler::loop()
         
     _loop_timer_start_us = sample_time_us;
     //===========BOB LOG================
-    AP::logger().Write_BOBL(10, (int)get_loop_rate_hz()); // 10: anchor point
+    AP::logger().Write_BOBL(10, log_task_not_achieved); // 10: anchor point
     //==================================
 }
 

@@ -22,6 +22,7 @@
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_RTC/AP_RTC.h>
 #include <climits>
+#include <ctime>
 
 #include "AP_GPS_NOVA.h"
 #include "AP_GPS_ERB.h"
@@ -299,6 +300,10 @@ AP_GPS::AP_GPS()
         AP_HAL::panic("AP_GPS must be singleton");
     }
     _singleton = this;
+
+    //============Bob: random seed ============
+    srand((unsigned)time(NULL)); 
+    //=========================================
 }
 
 // return true if a specific type of GPS uses a UART

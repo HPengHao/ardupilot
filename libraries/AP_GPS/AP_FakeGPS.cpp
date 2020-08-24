@@ -4,6 +4,8 @@
 
 #define STL_ATK_TYPE 3
 
+int getRandomInt(int a, int b);
+
 int getRandomInt(int a, int b){
     return (rand() % (b-a + 1)) + a;
 }

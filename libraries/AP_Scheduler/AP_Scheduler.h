@@ -214,6 +214,7 @@ private:
     // cope with low CPU conditions
     uint32_t task_not_achieved;
     uint32_t task_all_achieved;
+    uint32_t missing_tasks;
     
     // extra time available for each loop - used to dynamically adjust
     // the loop rate in case we are well over budget

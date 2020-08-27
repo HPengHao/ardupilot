@@ -144,7 +144,7 @@ void AP_Scheduler::run(uint32_t time_available)
             }
         }
     }
-    
+
     for (uint8_t i=0; i<_num_tasks; i++) {
         uint32_t dt = _tick_counter - _last_run[i];
         uint32_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;
@@ -159,6 +159,7 @@ void AP_Scheduler::run(uint32_t time_available)
         _task_time_allowed = _tasks[i].max_time_micros;
 
         if (dt >= interval_ticks*2) {
+            missing_tasks++;
             // we've slipped a whole run of this task!
             debug(2, "Scheduler slip task[%u-%s] (%u/%u/%u)\n",
                   (unsigned)i,
@@ -309,7 +310,8 @@ void AP_Scheduler::loop()
 
     // add in extra loop time determined by not achieving scheduler tasks
     time_available += extra_loop_us;
-
+    
+    missing_tasks = 0;
     // run the tasks
     run(time_available);
 
@@ -317,9 +319,7 @@ void AP_Scheduler::loop()
     // move result of AP_HAL::micros() forward:
     hal.scheduler->delay_microseconds(1);
 #endif
-    int log_task_not_achieved = 0;
     if (task_not_achieved > 0) {
-        log_task_not_achieved = task_not_achieved;
         // add some extra time to the budget
         extra_loop_us = MIN(extra_loop_us+100U, 5000U);
         task_not_achieved = 0;
@@ -341,7 +341,7 @@ void AP_Scheduler::loop()
         
     _loop_timer_start_us = sample_time_us;
     //===========BOB LOG================
-    AP::logger().Write_BOBL(10, log_task_not_achieved); // 10: anchor point
+    AP::logger().Write_BOBL(10, missing_tasks); // 10: anchor point
     //==================================
 }
 

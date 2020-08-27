@@ -2,7 +2,7 @@
 //#include <random>
 #include <GCS_MAVLink/GCS.h>
 
-#define STL_ATK_TYPE 3
+#define STL_ATK_TYPE 4
 
 int getRandomInt(int a, int b);
 
@@ -53,6 +53,28 @@ void AP_GPS::get_fake_location(const Location& true_loc) const{
     //we don't update from previous longitude because that can accumulate
     //and cause large offset and find by detector. Using fixed value can limit
     //longitude to a specific range
+
+#elif STL_ATK_TYPE == 4
+    static float increase_rate = 0.2;
+    static int last_inc = 0;
+    static int frame_cnt = 0;
+    static int frame_skip = -1;
+    if(increase_rate < 1){
+        if(frame_skip == -1){
+            frame_skip = (int)(1/increase_rate);
+        }
+        if(frame_cnt == frame_skip){
+            frame_cnt = 0;
+            last_inc += 1;
+        }else{
+            frame_cnt++;
+        }
+    }else{
+        last_inc += (int)increase_rate;
+    }
+    
+    (*fake_loc_ptr) = true_loc;
+    fake_loc_ptr->lng += last_inc;
 
 #endif
     //gcs().send_text(MAV_SEVERITY_INFO, "True data Lat: %d, Lng: %d", true_loc.lat, true_loc.lng);

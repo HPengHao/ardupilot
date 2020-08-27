@@ -130,32 +130,32 @@ bool AP_Logger_Backend::Write_Parameter(const AP_Param *ap,
     return Write_Parameter(name, ap->cast_to_float(type));
 }
 
-#define BOBL_LOG_ENABLE 1
+#define BOBL_LOG_ENABLE 0
 
 void AP_Logger::Write_BOBL(int code){
-    if(BOBL_LOG_ENABLE){
-        const struct log_BOBL pkt = {
-            LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
-            time_us : AP_HAL::micros64(),
-            dataA   : code,
-            dataB   : 521,
-            note    : "LOV"
-        };
-        WriteBlock(&pkt, sizeof(pkt));
-    }
+#if BOBL_LOG_ENABLE
+    const struct log_BOBL pkt = {
+        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
+        time_us : AP_HAL::micros64(),
+        dataA   : code,
+        dataB   : 521,
+        note    : "LOV"
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+#endif 
 }
 
 void AP_Logger::Write_BOBL(int code, int data){
-    if(BOBL_LOG_ENABLE){
-        const struct log_BOBL pkt = {
-            LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
-            time_us : AP_HAL::micros64(),
-            dataA   : code,
-            dataB   : data,
-            note    : "LOV"
-        };
-        WriteBlock(&pkt, sizeof(pkt));
-    }
+#if BOBL_LOG_ENABLE
+    const struct log_BOBL pkt = {
+        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
+        time_us : AP_HAL::micros64(),
+        dataA   : code,
+        dataB   : data,
+        note    : "LOV"
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+#endif
 }
 
 // Write an GPS packet

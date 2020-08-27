@@ -994,7 +994,14 @@ void AP_Logger_File::_io_timer(void)
         write_fd_semaphore.give();
         return;
     }
+
+    static float total_written_kb = 0;
+
     ssize_t nwritten = AP::FS().write(_write_fd, head, nbytes);
+    
+    total_written_kb += ((float)nwritten/1024);
+    AP::logger().Write_BOBL(17, (int)total_written_kb);
+
     last_io_operation = "";
     if (nwritten <= 0) {
         if ((tnow - _last_write_ms)/1000U > unsigned(_front._params.file_timeout)) {

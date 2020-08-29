@@ -1102,18 +1102,7 @@ bool AP_GPS::blend_health_check() const
     return (_blend_health_counter < 50);
 }
 
-const Location & AP_GPS::location() const{
-    //============Bob: GPS Stealthy attack===============
-    const Location &true_loc = location(primary_instance);
-    //gcs().send_text(MAV_SEVERITY_INFO, "True Location: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
-    //hal.console->printf("True Location2: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
-    if(_ins_bob->check_stealthy_atk()){
-        get_fake_location(true_loc);
-        return *fake_loc_ptr;
-    }
-    //===================================================
-    return true_loc;
-}
+
 
 /*
    re-assemble fragmented RTCM data

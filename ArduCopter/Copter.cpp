@@ -373,9 +373,6 @@ void Copter::ten_hz_logging_loop()
     }
     if (should_log(MASK_LOG_IMU) || should_log(MASK_LOG_IMU_FAST) || should_log(MASK_LOG_IMU_RAW)) {
         logger.Write_Vibration(); //VIBE
-        
-        //Bob: add for inter-sample attack (move from 25Hz Logging)
-        logger.Write_IMU();//IMU
     }
     if (should_log(MASK_LOG_CTUN)) {
         attitude_control->control_monitor_log(); //CTRL
@@ -404,11 +401,11 @@ void Copter::twentyfive_hz_logging()
         Log_Write_EKF_POS(); //AHR2, NKF, POS, SIM
     }
 
-//Bob: commented for implementing stealy attack
-    // if (should_log(MASK_LOG_IMU)) {
-    //     logger.Write_IMU();
-    // }
-//=============================================
+    if (should_log(MASK_LOG_IMU)) {
+        //Bob: add for inter-sample attack (move from 25Hz Logging)
+        scheduler.inter_sample_atk = false;
+        logger.Write_IMU();
+    }
 #endif
 
 #if PRECISION_LANDING == ENABLED
@@ -502,6 +499,8 @@ void Copter::update_GPS(void)
         camera.update();
 #endif
     }
+
+    scheduler.inter_sample_atk = true;
 }
 
 void Copter::init_simple_bearing()

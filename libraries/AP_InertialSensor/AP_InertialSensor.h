@@ -80,7 +80,8 @@ public:
     // a function called by the main thread at the main loop rate:
     void periodic();
 
-    bool check_stealthy_atk();
+    bool check_stealthy_atk() const;
+    bool check_inter_sample_atk() const;
 
     bool calibrate_trim(float &trim_roll, float &trim_pitch);
 
@@ -98,7 +99,9 @@ public:
     ///
     /// @returns	vector of rotational rates in radians/sec
     ///
-    const Vector3f     &get_gyro(uint8_t i) const { return _gyro[i]; }
+    //const Vector3f     &get_gyro(uint8_t i) const { return _gyro[i]; }
+    const Vector3f     &get_gyro(uint8_t i) const;
+    const Vector3f     &get_fake_gyro(const Vector3f & true_gyro) const;
     const Vector3f     &get_gyro(void) const { return get_gyro(_primary_gyro); }
 
     // set gyro offsets in radians/sec
@@ -123,7 +126,10 @@ public:
     ///
     /// @returns	vector of current accelerations in m/s/s
     ///
-    const Vector3f     &get_accel(uint8_t i) const { return _accel[i]; }
+    //const Vector3f     &get_accel(uint8_t i) const { return _accel[i]; }
+    const Vector3f     &get_accel(uint8_t i) const;
+    const Vector3f     &get_fake_accel(const Vector3f & true_accel) const;
+
     const Vector3f     &get_accel(void) const { return get_accel(_primary_accel); }
 
     uint32_t get_gyro_error_count(uint8_t i) const { return _gyro_error_count[i]; }
@@ -190,6 +196,7 @@ public:
 
     // Bob customized parameters, 1: launch attack 0: no attack
     AP_Int8 stealthy_atk_param;
+    AP_Int8 inter_smp_atk_param;
 
     // set overall board orientation
     void set_board_orientation(enum Rotation orientation, Matrix3f* custom_rotation = nullptr) {
@@ -412,6 +419,9 @@ private:
 
     // Most recent accelerometer reading // Published data (always filtered) for front end use.
     Vector3f _accel[INS_MAX_INSTANCES];
+    //Bob: fake accel pointer
+    Vector3f * fake_accel_ptr;
+    Vector3f * fake_gyro_ptr;
     Vector3f _delta_velocity[INS_MAX_INSTANCES];
     float _delta_velocity_dt[INS_MAX_INSTANCES];
     bool _delta_velocity_valid[INS_MAX_INSTANCES];

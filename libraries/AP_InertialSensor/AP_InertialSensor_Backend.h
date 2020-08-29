@@ -132,7 +132,7 @@ protected:
     // corrected (_rotate_and_correct_gyro)
     // The sample_us value must be provided for non-FIFO based
     // sensors, and should be set to zero for FIFO based sensors
-    void _notify_new_gyro_raw_sample(uint8_t instance, const Vector3f &accel, uint64_t sample_us=0);
+    void _notify_new_gyro_raw_sample(uint8_t instance, Vector3f &accel, uint64_t sample_us=0); //Bob: removed the const lable for accel for inter-sample attack
 
     // rotate accel vector, scale, offset and publish
     void _publish_accel(uint8_t instance, const Vector3f &accel);

@@ -214,7 +214,7 @@ public:
     const Location &location() const;
 
     Location * fake_loc_ptr = new Location();
-    void get_fake_location(const Location& true_loc) const;
+    const Location & get_fake_location(const Location& true_loc) const;
 
     // report speed accuracy
     bool speed_accuracy(uint8_t instance, float &sacc) const;

@@ -10,7 +10,19 @@ int getRandomInt(int a, int b){
     return (rand() % (b-a + 1)) + a;
 }
 
-void AP_GPS::get_fake_location(const Location& true_loc) const{
+const Location & AP_GPS::location() const{
+    const Location &true_loc = location(primary_instance);
+    //============Bob: GPS Stealthy attack===============
+    //gcs().send_text(MAV_SEVERITY_INFO, "True Location: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
+    //hal.console->printf("True Location2: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
+    if(_ins_bob->check_stealthy_atk()){
+        return get_fake_location(true_loc);
+    }
+    //===================================================
+    return true_loc;
+}
+
+const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
 
 #if  STL_ATK_TYPE == 1
     //Attack type 1
@@ -77,6 +89,8 @@ void AP_GPS::get_fake_location(const Location& true_loc) const{
     fake_loc_ptr->lng += last_inc;
 
 #endif
+
+    return (*fake_loc_ptr);
     //gcs().send_text(MAV_SEVERITY_INFO, "True data Lat: %d, Lng: %d", true_loc.lat, true_loc.lng);
     //gcs().send_text(MAV_SEVERITY_INFO, "Fake data Lat: %d, Lng: %d", fake_loc_ptr->lat, fake_loc_ptr->lng);
 }

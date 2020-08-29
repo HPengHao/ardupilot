@@ -150,6 +150,9 @@ public:
     // loop performance monitoring:
     AP::PerfInfo perf_info;
 
+    //Bob: inter-sample attack flag
+    bool inter_sample_atk = false;
+
 private:
     // function that is called before anything in the scheduler table:
     scheduler_fastloop_fn_t _fastloop_fn;
@@ -215,6 +218,8 @@ private:
     uint32_t task_not_achieved;
     uint32_t task_all_achieved;
     uint32_t missing_tasks;
+
+    
     
     // extra time available for each loop - used to dynamically adjust
     // the loop rate in case we are well over budget

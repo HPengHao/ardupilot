@@ -145,6 +145,10 @@ void AP_Scheduler::run(uint32_t time_available)
         }
     }
 
+    //Bob: turn off attack lable and it will be turned on in GPS_update() (50Hz).
+    //If not turened on, IMU will behave normal. Before IMU_Write()(10Hz), it will be turned off.
+    inter_sample_atk = false;
+
     for (uint8_t i=0; i<_num_tasks; i++) {
         uint32_t dt = _tick_counter - _last_run[i];
         uint32_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;
@@ -310,7 +314,7 @@ void AP_Scheduler::loop()
 
     // add in extra loop time determined by not achieving scheduler tasks
     time_available += extra_loop_us;
-    
+
     missing_tasks = 0;
     // run the tasks
     run(time_available);

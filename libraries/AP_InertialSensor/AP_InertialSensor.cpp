@@ -464,6 +464,12 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Values: 1: Enabled, 0: Disabled
     AP_GROUPINFO("STLTHY_ATK",  42, AP_InertialSensor, stealthy_atk_param, 0),
 
+    // @Param: INTSMP_ATK
+    // @DisplayName: Inter-sample stealthy attack enable
+    // @Description: To see whether the inter-sample stealthy attack is enabled
+    // @User: Advanced
+    // @Values: 1: Enabled, 0: Disabled
+    AP_GROUPINFO("INTSMP_ATK",  43, AP_InertialSensor, inter_smp_atk_param, 0),
     /*
       NOTE: parameter indexes have gaps above. When adding new
       parameters check for conflicts carefully
@@ -493,6 +499,8 @@ AP_InertialSensor::AP_InertialSensor() :
     }
 
     AP_AccelCal::register_client(this);
+    fake_accel_ptr = new Vector3f();
+    fake_gyro_ptr = new Vector3f();
 }
 
 /*
@@ -605,14 +613,16 @@ void AP_InertialSensor::_start_backends()
 }
 
 /* Check if the Stealthy attack is launched*/
-bool AP_InertialSensor::check_stealthy_atk()
+bool AP_InertialSensor::check_stealthy_atk() const
 {
-    if(stealthy_atk_param.get() == 1){
-        return true;
-    }else{
-        return false;
-    }
+    return (stealthy_atk_param.get() == 1);
 }
+
+bool AP_InertialSensor::check_inter_sample_atk() const
+{
+    return (inter_smp_atk_param.get() == 1);
+}
+
 
 /* Find the N instance of the backend that has already been successfully detected */
 AP_InertialSensor_Backend *AP_InertialSensor::_find_backend(int16_t backend_id, uint8_t instance)

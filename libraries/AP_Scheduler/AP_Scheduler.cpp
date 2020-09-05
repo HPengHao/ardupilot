@@ -147,7 +147,17 @@ void AP_Scheduler::run(uint32_t time_available)
 
     //Bob: turn off attack lable and it will be turned on in GPS_update() (50Hz).
     //If not turened on, IMU will behave normal. Before IMU_Write()(10Hz), it will be turned off.
-    inter_sample_atk = false;
+    if(imuLog_delay_Ticks >= 0){
+        imuLog_delay_Ticks--;
+        if(imuLog_delay_Ticks == 0){
+            AP::logger().Write_IMU();
+            imuLog_delay_Ticks = -1; //wait for twentyFiveHz task to set value, otherwise, don't log.
+            inter_sample_atk = false;
+        }
+    }else{
+        inter_sample_atk = false;
+    }
+    
 
     for (uint8_t i=0; i<_num_tasks; i++) {
         uint32_t dt = _tick_counter - _last_run[i];

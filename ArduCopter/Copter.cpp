@@ -294,6 +294,7 @@ void Copter::rc_loop()
     // -----------------------------------------
     read_radio();
     rc().read_mode_switch();
+    //scheduler.inter_sample_atk = true;
 }
 
 // throttle_loop - should be run at 50 hz
@@ -404,7 +405,8 @@ void Copter::twentyfive_hz_logging()
     if (should_log(MASK_LOG_IMU)) {
         //Bob: add for inter-sample attack (move from 25Hz Logging)
         scheduler.inter_sample_atk = false;
-        logger.Write_IMU();
+        scheduler.imuLog_delay_Ticks = 1;
+        //logger.Write_IMU();
     }
 #endif
 

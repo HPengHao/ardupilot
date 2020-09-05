@@ -152,6 +152,7 @@ public:
 
     //Bob: inter-sample attack flag
     bool inter_sample_atk = false;
+    int imuLog_delay_Ticks = -1; //-1 means delay infinite (don't log)
 
 private:
     // function that is called before anything in the scheduler table:

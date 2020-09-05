@@ -268,7 +268,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         _imu._new_gyro_data[instance] = true;
     }
 
-    if (!_imu.batchsampler.doing_post_filter_logging()) {
+    if (!_imu.batchsampler.doing_post_filter_logging()) { //Bob: usually we do raw data logging.
         log_gyro_raw(instance, sample_us, gyro);
     }
     else {

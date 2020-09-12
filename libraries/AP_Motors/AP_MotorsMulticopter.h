@@ -38,6 +38,9 @@ public:
     // output - sends commands to the motors
     virtual void        output() override;
 
+    //Bob: log actuater data
+    const float*        get_actuator_data() const;
+
     // output_min - sends minimum values out to the motors
     void                output_min() override;
 

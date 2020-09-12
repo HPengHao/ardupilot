@@ -257,6 +257,10 @@ void AP_MotorsMulticopter::output()
     output_boost_throttle();
 };
 
+const float* AP_MotorsMulticopter::get_actuator_data() const{
+    return _actuator;
+}
+
 // output booster throttle, if any
 void AP_MotorsMulticopter::output_boost_throttle(void)
 {

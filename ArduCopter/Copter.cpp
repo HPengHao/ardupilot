@@ -264,6 +264,9 @@ void Copter::fast_loop()
     // check if ekf has reset target heading or position
     check_ekf_reset();
 
+    //Bob: log ekf data, -1 means the primary core;
+    AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
+
     // run the attitude controllers
     update_flight_mode();
 

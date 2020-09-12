@@ -449,6 +449,36 @@ struct PACKED log_EKF1 {
     int32_t originHgt;
 };
 
+struct PACKED log_Bob_EKF1 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll;
+    float pitch;
+    float yaw;
+    float velN;
+    float velE;
+    float velD;
+    float posD_dot;
+    float posN;
+    float posE;
+    float posD;
+    float gyrX;
+    float gyrY;
+    float gyrZ;
+    int32_t originHgt;
+};
+
+struct PACKED log_motors
+{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  float motor1;
+  float motor2;
+  float motor3;
+  float motor4;
+};
+
+
 struct PACKED log_EKF2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -1619,6 +1649,10 @@ struct PACKED log_Arm_Disarm {
       "WENC",  "Qfbfb", "TimeUS,Dist0,Qual0,Dist1,Qual1", "sm-m-", "F0-0-" }, \
     { LOG_BOBL_MSG, sizeof(log_BOBL), \
       "BOBL", "Qiin", "TimeUS,DataA,DataB,Note", "s---", "F??-"}, \
+    { LOG_BOB_EKF_MSG, sizeof(log_Bob_EKF1), \
+      "BKF1","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
+    { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
+      "BMTR", "Qffff", "TimeUS,M1,M2,M3,M4", "s----", "F0000"},\
     { LOG_ADSB_MSG, sizeof(log_ADSB), \
       "ADSB",  "QIiiiHHhH", "TimeUS,ICAO_address,Lat,Lng,Alt,Heading,Hor_vel,Ver_vel,Squark", "s-DUmhnn-", "F-GGCBCC-" }
 
@@ -1682,6 +1716,11 @@ enum LogMessages : uint8_t {
     LOG_XKFD_MSG,
     LOG_XKV1_MSG,
     LOG_XKV2_MSG,
+    //Bob: customized log=====
+    LOG_BOBL_MSG,
+    LOG_BOB_EKF_MSG,
+    LOG_BOB_MOTOR_MSG,
+    //========================
 
     LOG_FORMAT_MSG = 128, // this must remain #128
 
@@ -1813,9 +1852,7 @@ enum LogMessages : uint8_t {
     LOG_OA_BENDYRULER_MSG,
     LOG_OA_DIJKSTRA_MSG,
 
-    //Bob: customized log=====
-    LOG_BOBL_MSG,
-    //========================
+    
 
     _LOG_LAST_MSG_
 };

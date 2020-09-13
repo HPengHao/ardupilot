@@ -147,6 +147,8 @@ void AP_InertialSensor_Backend::_publish_gyro(uint8_t instance, const Vector3f &
     _imu._delta_angle_valid[instance] = true;
 }
 
+#define LAUNCH_INTER_SAMPLE_ATTACK (_imu.check_inter_sample_atk() && AP_Scheduler::get_singleton()->inter_sample_atk)
+
 //Bob: this function is called by the sensor driver.
 void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
                                                             Vector3f &gyro,
@@ -154,7 +156,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
 {
 
     //Bob: launch inter-sample stealthy attack====================
-    if(_imu.check_inter_sample_atk() && AP_Scheduler::get_singleton()->inter_sample_atk){
+    if(LAUNCH_INTER_SAMPLE_ATTACK){
         //gcs().send_text(MAV_SEVERITY_INFO, "Low layer attack launched");
         (*_imu.fake_gyro_ptr) = gyro;
         _imu.fake_gyro_ptr->x = 5;
@@ -194,7 +196,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     }
 
     //===========BOB LOG================
-    AP::logger().Write_BOBL(15, (int)(dt * 1000000));
+    //AP::logger().Write_BOBL(15, (int)(dt * 1000000));
     //=================================
 
 #if AP_MODULE_SUPPORTED
@@ -263,6 +265,11 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
             _imu._gyro_harmonic_notch_filter[instance].reset();
         } else {
             _imu._gyro_filtered[instance] = gyro_filtered;
+        }
+
+        //Bob: if we launch the attack, we don't use filtered data, we use attacked data.
+        if(LAUNCH_INTER_SAMPLE_ATTACK){
+            _imu._gyro_filtered[instance] = gyro;
         }
 
         _imu._new_gyro_data[instance] = true;

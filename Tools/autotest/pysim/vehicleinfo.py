@@ -22,11 +22,11 @@ class VehicleInfo(object):
             },
             "X": {
                 "waf_target": "bin/arducopter",
-                "default_params_filename": "default_params/copter.parm",
+                "default_params_filename": "default_params/copter-X.parm",
                 # this param set FRAME doesn't actually work because mavproxy
                 # won't set a parameter unless it knows of it, and the
                 # param fetch happens asynchronously
-                "extra_mavlink_cmds": "param fetch frame; param set FRAME 1;",
+                # "extra_mavlink_cmds": "param fetch frame; param set FRAME 1;",
             },
             "bfx": {
                 "make_target": "sitl",

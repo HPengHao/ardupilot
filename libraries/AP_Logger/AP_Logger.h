@@ -341,6 +341,7 @@ public:
         AP_Int8 log_replay;
         AP_Int8 mav_bufsize; // in kilobytes
         AP_Int16 file_timeout; // in seconds
+        AP_Int8 compress_log; //Bob: compress log
     } _params;
 
     const struct LogStructure *structure(uint16_t num) const;
@@ -353,6 +354,9 @@ public:
     bool logging_present() const;
     bool logging_enabled() const;
     bool logging_failed() const;
+
+    //Bob: compress log check
+    bool is_compress_log() const;
 
     // notify logging subsystem of an arming failure. This triggers
     // logging for HAL_LOGGER_ARM_PERSIST seconds

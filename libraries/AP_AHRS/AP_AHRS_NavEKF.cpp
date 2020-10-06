@@ -1898,9 +1898,11 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
         motor4  : motor_actuators_data[3]
     };
 
-    AP_LOGC::compressionLog(velNED, posNE, posD, gyroUnbias, euler, time_us, motor_actuators_data);
+    if(AP::logger().is_compress_log()){
+        AP_LOGC::compressionLog(velNED, posNE, posD, gyroUnbias, euler, time_us, motor_actuators_data);
+    }
     
-    AP::logger().WriteBlock(&pkt2, sizeof(pkt2));
+    //AP::logger().WriteBlock(&pkt2, sizeof(pkt2));
     
 }
 

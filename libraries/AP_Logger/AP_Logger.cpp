@@ -92,6 +92,8 @@ const AP_Param::GroupInfo AP_Logger::var_info[] = {
     // @User: Standard
     // @Units: s
     AP_GROUPINFO("_FILE_TIMEOUT",  6, AP_Logger, _params.file_timeout,     HAL_LOGGING_FILE_TIMEOUT),
+
+    AP_GROUPINFO("_COMPRESS", 7, AP_Logger, _params.compress_log, 0),
     
     AP_GROUPEND
 };
@@ -495,6 +497,10 @@ bool AP_Logger::logging_failed() const
         }
     }
     return false;
+}
+
+bool AP_Logger::is_compress_log() const{
+    return _params.compress_log == 1;
 }
 
 void AP_Logger::Write_MessageF(const char *fmt, ...)

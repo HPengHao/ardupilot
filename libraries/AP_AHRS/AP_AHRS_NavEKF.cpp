@@ -26,6 +26,7 @@
 #include <AP_Module/AP_Module.h>
 #include <AP_GPS/AP_GPS.h>
 #include <AP_Baro/AP_Baro.h>
+#include <AP_LogCompression/AP_LogCompression.h>
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 
@@ -1897,6 +1898,8 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
         motor4  : motor_actuators_data[3]
     };
 
+    AP_LOGC::compressionLog(velNED, posNE, posD, gyroUnbias, euler, time_us, motor_actuators_data);
+    
     AP::logger().WriteBlock(&pkt2, sizeof(pkt2));
     
 }

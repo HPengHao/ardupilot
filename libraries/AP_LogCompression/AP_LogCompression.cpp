@@ -1,81 +1,67 @@
 #include "AP_LogCompression.h"
 
 void AP_LOGC::quadrotor_m(float, const float x[12], const float u[4], float a, float b,
-                 float c, float d, float m, float I_x, float I_y, float I_z,
-                 float K_T, float K_Q, float dx[12], float y[12])
+                          float c, float d, float m, float I_x, float I_y, float I_z,
+                          float K_T, float K_Q, float dx[12], float y[12])
 {
-  int i;
-  float b_x[16];
+    int i;
+    float b_x[16];
 
-  // IDNLGREY model file (discrete-time nonlinear model) :
-  // xn = x(t+Ts) : state update values in discrete-time case (A column vector with Nx entries) 
-  // y : outputs values (A column vector with Ny entries)
-  //  gravity acceleration constant (m/s^2)
-  //  inputs
-  //      x(13:16)=u;
-  for (i = 0; i < 12; i++) {
-    b_x[i] = x[i];
-  }
+    // IDNLGREY model file (discrete-time nonlinear model) :
+    // xn = x(t+Ts) : state update values in discrete-time case (A column vector with Nx entries)
+    // y : outputs values (A column vector with Ny entries)
+    //  gravity acceleration constant (m/s^2)
+    //  inputs
+    //      x(13:16)=u;
+    for (i = 0; i < 12; i++)
+    {
+        b_x[i] = x[i];
+    }
 
-  for (i = 0; i < 4; i++) {
-    b_x[i + 12] = u[i];
-  }
+    for (i = 0; i < 4; i++)
+    {
+        b_x[i + 12] = u[i];
+    }
 
-  //  squred inputs
-  //      x(13) = u(1)*u(1);
-  //      x(14) = u(2)*u(2);
-  //      x(15) = u(3)*u(3);
-  //      x(16) = u(4)*u(4);
-  // -------------------------------------------------
-  dx[0] = b_x[6];
-  dx[1] = b_x[7];
-  dx[2] = b_x[8];
-  dx[3] = (b_x[9] + sinf(b_x[3]) * tanf(b_x[4]) *
-           b_x[10]) + cosf(b_x[3]) * tanf(b_x[4]) *
-    b_x[11];
-  dx[4] = cosf(b_x[3]) * b_x[10] - sinf(b_x[3]) *
-    b_x[11];
-  dx[5] = sinf(b_x[3]) / cosf(b_x[4]) * b_x[10] +
-    cosf(b_x[3]) / cosf(b_x[4]) * b_x[11];
-  dx[6] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf
-    (b_x[3]) * sinf(b_x[4]) * cosf(b_x[5]) +
-    sinf(b_x[3]) * sinf(b_x[5]));
-  dx[7] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf
-    (b_x[3]) * sinf(b_x[4]) * sinf(b_x[5]) -
-    sinf(b_x[3]) * cosf(b_x[5]));
-  dx[8] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf
-    (b_x[3]) * cosf(b_x[4])) - 9.80665F;
-  dx[9] = (I_y - I_z) / I_x * b_x[10] * b_x[11] + K_T / I_x * (((-a * b_x[12] +
-    d * b_x[13]) + a * b_x[14]) - d * b_x[15]);
-  dx[10] = (I_x - I_z) / I_y * b_x[9] * b_x[11] + K_T / I_y * (((-b * b_x[12] +
-    c * b_x[13]) - b * b_x[14]) + c * b_x[15]);
-  dx[11] = (I_x - I_y) / I_z * b_x[9] * b_x[10] + K_Q / I_z * (((-b_x[12] - b_x
-    [13]) + b_x[14]) + b_x[15]);
+    // -------------------------------------------------
+    dx[0] = b_x[6];
+    dx[1] = b_x[7];
+    dx[2] = b_x[8];
+    dx[3] = (b_x[9] + sinf(b_x[3]) * tanf(b_x[4]) * b_x[10]) + cosf(b_x[3]) * tanf(b_x[4]) * b_x[11];
+    dx[4] = cosf(b_x[3]) * b_x[10] - sinf(b_x[3]) * b_x[11];
+    dx[5] = sinf(b_x[3]) / cosf(b_x[4]) * b_x[10] + cosf(b_x[3]) / cosf(b_x[4]) * b_x[11];
+    dx[6] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf(b_x[3]) * sinf(b_x[4]) * cosf(b_x[5]) + sinf(b_x[3]) * sinf(b_x[5]));
+    dx[7] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf(b_x[3]) * sinf(b_x[4]) * sinf(b_x[5]) - sinf(b_x[3]) * cosf(b_x[5]));
+    dx[8] = K_T / m * (((b_x[12] + b_x[13]) + b_x[14]) + b_x[15]) * (cosf(b_x[3]) * cosf(b_x[4])) - 9.80665F;
+    dx[9] = (I_y - I_z) / I_x * b_x[10] * b_x[11] + K_T / I_x * (((-a * b_x[12] + d * b_x[13]) + a * b_x[14]) - d * b_x[15]);
+    dx[10] = (I_x - I_z) / I_y * b_x[9] * b_x[11] + K_T / I_y * (((-b * b_x[12] + c * b_x[13]) - b * b_x[14]) + c * b_x[15]);
+    dx[11] = (I_x - I_y) / I_z * b_x[9] * b_x[10] + K_Q / I_z * (((-b_x[12] - b_x[13]) + b_x[14]) + b_x[15]);
 
-  //      dx(10) =  K_T/I_x*(-a*x(13)+d*x(14)+a*x(15)-d*x(16));
-  //      dx(11) =  K_T/I_y*(-b*x(13)+c*x(14)-b*x(15)+c*x(16));
-  //      dx(12) =  K_Q/I_z*(-x(13)-x(14)+x(15)+x(16));
-  //  our motor model (W1 - W4)
-  //      dx(13) = -alpha * x(13) + K_m * u(1)*u(1);
-  //      dx(14) = -alpha * x(14) + K_m * u(2)*u(2);
-  //      dx(15) = -alpha * x(15) + K_m * u(3)*u(3);
-  //      dx(16) = -alpha * x(16) + K_m * u(4)*u(4);
-  //     %% addtional effects here
-  //  air resistance
-  //  *0.6538
-  // rotational air resitance
-  //  *0.2778
-  for (i = 0; i < 3; i++) {
-    dx[6 + i] += -x[6 + i] * 9.80665F / 15.0F;
-    dx[9 + i] += -x[9 + i] * 6.98131704F / 25.1327419F;
-  }
+    
+    //     %% addtional effects here
+    //  air resistance
+    //  *0.6538
+    // rotational air resitance
+    //  *0.2778
+    for (i = 0; i < 3; i++)
+    {
+        dx[6 + i] += -x[6 + i] * 9.80665F / 15.0F;
+        dx[9 + i] += -x[9 + i] * 6.98131704F / 25.1327419F;
+    }
+    float frame_height = 0.1;
+    if ((x[2] - frame_height < 0.001F) && (dx[8] <= 0.0F))
+    {
+        //  on ground
+        dx[8] = 0.0F;
+    }
 
-  //
-  for (i = 0; i < 12; i++) {
-    y[i] = x[i];
-  }
+    //
+    for (i = 0; i < 12; i++)
+    {
+        y[i] = x[i];
+    }
 
-  //  update outputs
+    //  update outputs
 }
 
 void AP_LOGC::transfromNED2ENU(float state[12]){

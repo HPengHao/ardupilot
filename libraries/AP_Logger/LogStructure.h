@@ -1651,6 +1651,8 @@ struct PACKED log_Arm_Disarm {
       "BOBL", "Qiin", "TimeUS,DataA,DataB,Note", "s---", "F??-"}, \
     { LOG_BOB_EKF_MSG, sizeof(log_Bob_EKF1), \
       "BKF1","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
+    { LOG_CLOG_SYN_MSG, sizeof(log_Bob_EKF1), \
+      "CSYN","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
     { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
       "BMTR", "Qffff", "TimeUS,M1,M2,M3,M4", "s----", "F0000"},\
     { LOG_ADSB_MSG, sizeof(log_ADSB), \
@@ -1720,6 +1722,7 @@ enum LogMessages : uint8_t {
     LOG_BOBL_MSG,
     LOG_BOB_EKF_MSG,
     LOG_BOB_MOTOR_MSG,
+    LOG_CLOG_SYN_MSG,
     //========================
 
     LOG_FORMAT_MSG = 128, // this must remain #128

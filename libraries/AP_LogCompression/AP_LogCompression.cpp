@@ -145,7 +145,9 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
             x[i] = true_x[i];
             last_log_loop[i] = loopCount;
         }
-        AP::logger().WriteCriticalBlock(&sensor_pkt, sizeof(sensor_pkt));
+        struct log_Bob_EKF1 log_sycn = sensor_pkt;
+        log_sycn.msgid = LOG_CLOG_SYN_MSG;
+        AP::logger().WriteCriticalBlock(&log_sycn, sizeof(log_sycn));
     }else{ //2.2 compression log
         for (int i = 0; i < 12; i++)
         {

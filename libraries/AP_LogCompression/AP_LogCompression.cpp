@@ -1,4 +1,5 @@
 #include "AP_LogCompression.h"
+#include <AP_Logger/AP_Logger.h>
 
 void AP_LOGC::quadrotor_m(float, const float x[12], const float u[4], float a, float b,
                           float c, float d, float m, float I_x, float I_y, float I_z,
@@ -86,9 +87,10 @@ void AP_LOGC::updateState(float x[12], float dx[12], float dt){
     
 }
 
-void AP_LOGC::compressionLog(const Vector3f& velNED, const Vector2f& posNE, float posD, 
-        const Vector3f& gyroUnbias, const Vector3f& euler, uint16_t time_us, const float* motor_actuators_data){
+void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struct log_motors & motor_pkt){
+    //parameters
     static float x[12] = {0};
+    static float true_x[12] = {0};
     static float dx[12] = {0};
     static float y[12] = {0};
     static float u[4] = {0};
@@ -103,28 +105,81 @@ void AP_LOGC::compressionLog(const Vector3f& velNED, const Vector2f& posNE, floa
     static float K_T = 7.21077; 
     static float K_Q = 0.10472; 
     static uint64_t last_time_us = 0;
+    static int K_stone = 400;
+    static int loopCount = -1;
+    static int max_freq = 400;
     
-    //prepare dt
+    static float error_thre[12] = {0.139337476507485, 0.124396874563097, 0.0147272946765464,
+                                0.00372856443706101, 0.00390555433968539, 0.00589400093019354, 
+                                0.0696205367431640, 0.0815225658620695, 0.0264938590124031, 
+                                0.00822311394035166, 0.00840920644259765, 0.0101633185357302};
+    static int last_log_loop[12] = {0};
+
+    uint64_t time_us = sensor_pkt.time_us;
+    
+    //prepare dt, unit: s
     float dt = (float)((double)(time_us-last_time_us)*1e-6);
     last_time_us = time_us;
 
     //prepare input
-    for (int i = 0; i < 4; i++)
-    {
-        u[i] = motor_actuators_data[i];
+    u[0] = motor_pkt.motor1;
+    u[1] = motor_pkt.motor2;
+    u[2] = motor_pkt.motor3;
+    u[3] = motor_pkt.motor4;
+
+    //1. update old states to predict current states.
+    AP_LOGC::updateState(x, dx, dt); 
+
+    true_x[0] = sensor_pkt.posN;         true_x[1] = sensor_pkt.posE;         true_x[2] = sensor_pkt.posD;
+    true_x[3] = sensor_pkt.roll;         true_x[4] = sensor_pkt.pitch;         true_x[5] = wrap_2PI(sensor_pkt.yaw);
+    true_x[6] = sensor_pkt.velN;        true_x[7] = sensor_pkt.velE;        true_x[8] = sensor_pkt.velD;
+    true_x[9] = sensor_pkt.gyrX;    true_x[10] = sensor_pkt.gyrY;   true_x[11] = sensor_pkt.gyrZ;
+    AP_LOGC::transfromNED2ENU(true_x);
+
+    //2. test if we need synchronization. If so, synchronize. 
+    loopCount++; //loopCount change from [0, K_stone)
+    if(loopCount % K_stone == 0){ //2.1 K-milestone sychronization
+        loopCount = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            x[i] = true_x[i];
+            last_log_loop[i] = loopCount;
+        }
+        AP::logger().WriteCriticalBlock(&sensor_pkt, sizeof(sensor_pkt));
+    }else{ //2.2 compression log
+        for (int i = 0; i < 12; i++)
+        {
+            float error = abs(true_x[i] - x[i]);
+            if(is_log(error, error_thre[i], last_log_loop[i], loopCount, max_freq)){
+                //need to log
+                AP::logger().WriteCritical("CLOG", "TimeUS,stateNo,value", "Qbf",
+                                        time_us,
+                                        (int8_t)(i+1),
+                                        (float)true_x[i]
+                );
+                last_log_loop[i] = loopCount;
+            }
+        }
     }
-
-    AP_LOGC::updateState(x, dx, dt); //1. update old states to predict current states.
-
-    //2. test if we need synchronization. If so, synchronize. //TODO
-    //for testing running time, we just sychronize all the time.
-    x[0] = posNE.x;         x[1] = posNE.y;         x[2] = posD;
-    x[3] = euler.x;         x[4] = euler.y;         x[5] = wrap_2PI(euler.z);
-    x[6] = velNED.x;        x[7] = velNED.y;        x[8] = velNED.z;
-    x[9] = gyroUnbias.x;    x[10] = gyroUnbias.y;   x[11] = gyroUnbias.z;
-    AP_LOGC::transfromNED2ENU(x);
 
     //3. get current output and calculate dt for next time.
     AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y);
 
+}
+
+bool AP_LOGC::is_log(float error, float error_max, int last_log_loop, int current_loop, int max_freq){
+    float scale_factor = 1;
+    if(error >= error_max){
+        return true;
+    }else{
+        float desired_freq = scale_factor * (error / error_max) * max_freq;
+        float current_freq = max_freq * (1/(float)(current_loop - last_log_loop));
+        if(desired_freq > current_freq){
+            return true;
+        }else
+        {
+            return false;
+        }
+        
+    }
 }

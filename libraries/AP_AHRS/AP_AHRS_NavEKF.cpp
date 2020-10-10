@@ -1887,7 +1887,6 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
         originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
     };
     
-
     const struct log_motors pkt2
     {
         LOG_PACKET_HEADER_INIT(LOG_BOB_MOTOR_MSG),
@@ -1899,14 +1898,13 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     };
 
     if(AP::logger().is_compress_log()){
-        AP_LOGC::compressionLog(velNED, posNE, posD, gyroUnbias, euler, time_us, motor_actuators_data);
+        AP_LOGC::compressionLog(pkt, pkt2);
     }else{
-        AP::logger().WriteBlock(&pkt, sizeof(pkt));
-        AP::logger().WriteBlock(&pkt2, sizeof(pkt2));
+        AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
     }
-    
-    
-    
+
+    //we need to log motors data anyway.
+    AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));
 }
 
 AP_AHRS_NavEKF &AP::ahrs_navekf()

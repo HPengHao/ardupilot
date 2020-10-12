@@ -14,4 +14,5 @@ namespace AP_LOGC{
     void updateState(float x[12], float dx[12], float dt);
     void compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struct log_motors & motor_pkt);
     bool is_log(float error, float error_max, int last_log_loop, int current_loop, int max_freq);
+    float transformInput(float actuator);
 }

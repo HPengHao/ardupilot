@@ -122,10 +122,10 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
     last_time_us = time_us;
 
     //prepare input
-    u[0] = motor_pkt.motor1;
-    u[1] = motor_pkt.motor2;
-    u[2] = motor_pkt.motor3;
-    u[3] = motor_pkt.motor4;
+    u[0] = transformInput(motor_pkt.motor1);
+    u[1] = transformInput(motor_pkt.motor2);
+    u[2] = transformInput(motor_pkt.motor3);
+    u[3] = transformInput(motor_pkt.motor4);
 
     //1. update old states to predict current states.
     AP_LOGC::updateState(x, dx, dt); 
@@ -148,29 +148,33 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
         struct log_Bob_EKF1 log_sycn = sensor_pkt;
         log_sycn.msgid = LOG_CLOG_SYN_MSG;
         AP::logger().WriteCriticalBlock(&log_sycn, sizeof(log_sycn));
-    }else{ //2.2 compression log
-        for (int i = 0; i < 12; i++)
-        {
-            float error = abs(true_x[i] - x[i]);
-            if(is_log(error, error_thre[i], last_log_loop[i], loopCount, max_freq)){
-                //need to log
-                AP::logger().WriteCritical("CLOG", "TimeUS,stateNo,value", "Qbf",
-                                        time_us,
-                                        (int8_t)(i+1),
-                                        (float)true_x[i]
-                );
-                last_log_loop[i] = loopCount;
-            }
-        }
     }
 
-    //3. get current output and calculate dt for next time.
+    //3. get current output and calculate dx for next time.
     AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y);
+    
+    //compression log
+    for (int i = 0; i < 12; i++)
+    {
+        float error = abs(true_x[i] - y[i]);
+        if(is_log(error, error_thre[i], last_log_loop[i], loopCount, max_freq)){
+            //need to log
+            AP::logger().WriteCritical("CLOG", "TimeUS,stateNo,value", "Qbf",
+                                    time_us,
+                                    (int8_t)(i+1),
+                                    (float)true_x[i]
+            );
+            last_log_loop[i] = loopCount;
+        }
+    }
 
 }
 
 bool AP_LOGC::is_log(float error, float error_max, int last_log_loop, int current_loop, int max_freq){
     float scale_factor = 1;
+    if(error < 1e-20 || last_log_loop == current_loop){
+        return false;
+    }
     if(error >= error_max){
         return true;
     }else{
@@ -184,4 +188,8 @@ bool AP_LOGC::is_log(float error, float error_max, int last_log_loop, int curren
         }
         
     }
+}
+
+float AP_LOGC::transformInput(float actuator){
+    return (((actuator*1000)+1000)-1100)/900;
 }

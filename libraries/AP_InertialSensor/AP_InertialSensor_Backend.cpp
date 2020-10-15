@@ -381,7 +381,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
     }
 
     //===========BOB LOG================
-    AP::logger().Write_BOBL(14, (int)(dt * 1000000));
+    //AP::logger().Write_BOBL(14, (int)(dt * 1000000));
     //=================================
 
 #if AP_MODULE_SUPPORTED

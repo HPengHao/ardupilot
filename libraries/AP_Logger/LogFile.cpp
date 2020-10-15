@@ -130,7 +130,7 @@ bool AP_Logger_Backend::Write_Parameter(const AP_Param *ap,
     return Write_Parameter(name, ap->cast_to_float(type));
 }
 
-#define BOBL_LOG_ENABLE 0
+#define BOBL_LOG_ENABLE 1
 
 void AP_Logger::Write_BOBL(int code){
 #if BOBL_LOG_ENABLE

@@ -1000,7 +1000,7 @@ void AP_Logger_File::_io_timer(void)
     ssize_t nwritten = AP::FS().write(_write_fd, head, nbytes);
     
     total_written_kb += ((float)nwritten/1024);
-    AP::logger().Write_BOBL(17, (int)total_written_kb);
+    //AP::logger().Write_BOBL(17, (int)total_written_kb);
 
     last_io_operation = "";
     if (nwritten <= 0) {

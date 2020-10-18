@@ -279,6 +279,8 @@ void AP_Scheduler::loop()
     hal.util->persistent_data.scheduler_task = -1;
 
     const uint32_t sample_time_us = AP_HAL::micros();
+
+    const uint64_t start_evaluation = AP_HAL::micros64();
     
     if (_loop_timer_start_us == 0) {
         _loop_timer_start_us = sample_time_us;
@@ -349,6 +351,10 @@ void AP_Scheduler::loop()
             extra_loop_us = MAX(0U, extra_loop_us-50U);
         }
     }
+
+    const uint64_t end_evaluation_time = AP_HAL::micros64();
+
+    AP::logger().Write_BOBL(18, (int)(end_evaluation_time-start_evaluation));
 
     // check loop time
     perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);

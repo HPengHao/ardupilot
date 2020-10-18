@@ -1859,15 +1859,35 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     Vector3f gyroUnbias;
     float posDownDeriv;
     Location originLLH;
-    EKF2.getEulerAngles(_core,euler);
-    EKF2.getVelNED(_core,velNED);
-    EKF2.getPosNE(_core,posNE);
-    EKF2.getPosD(_core,posD);
-    gyroUnbias = get_gyro();
-    posDownDeriv = EKF2.getPosDownDerivative(_core);
-    if (!EKF2.getOriginLLH(_core,originLLH)) {
-        originLLH.alt = 0;
+    switch (ekf_type()){
+        case EKF_TYPE2:
+            EKF2.getEulerAngles(_core,euler);
+            EKF2.getVelNED(_core,velNED);
+            EKF2.getPosNE(_core,posNE);
+            EKF2.getPosD(_core,posD);
+            posDownDeriv = EKF2.getPosDownDerivative(_core);
+            if (!EKF2.getOriginLLH(_core,originLLH)) {
+                originLLH.alt = 0;
+            }
+            break;
+        case EKF_TYPE3:
+            EKF3.getEulerAngles(_core,euler);
+            EKF3.getVelNED(_core,velNED);
+            EKF3.getPosNE(_core,posNE);
+            EKF3.getPosD(_core,posD);
+            posDownDeriv = EKF3.getPosDownDerivative(_core);
+            if (!EKF3.getOriginLLH(_core,originLLH)) {
+                originLLH.alt = 0;
+            }
+            break;
+        default:
+            return;
     }
+
+    
+    gyroUnbias = get_gyro();
+    
+    
     const struct log_Bob_EKF1 pkt{
         LOG_PACKET_HEADER_INIT(LOG_BOB_EKF_MSG),
         time_us : time_us,

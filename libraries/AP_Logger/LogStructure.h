@@ -478,6 +478,15 @@ struct PACKED log_motors
   float motor4;
 };
 
+struct PACKED log_clog_gt
+{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  int8_t stateNo;
+  float value;
+};
+
+
 
 struct PACKED log_EKF2 {
     LOG_PACKET_HEADER;
@@ -1655,6 +1664,8 @@ struct PACKED log_Arm_Disarm {
       "CSYN","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
     { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
       "BMTR", "Qffff", "TimeUS,M1,M2,M3,M4", "s----", "F0000"},\
+    { LOG_CLOG_GT_MSG, sizeof(log_clog_gt), \
+      "CLOG", "Qbf", "TimeUS,stateNo,value", "s--", "F00"},\
     { LOG_ADSB_MSG, sizeof(log_ADSB), \
       "ADSB",  "QIiiiHHhH", "TimeUS,ICAO_address,Lat,Lng,Alt,Heading,Hor_vel,Ver_vel,Squark", "s-DUmhnn-", "F-GGCBCC-" }
 
@@ -1723,6 +1734,7 @@ enum LogMessages : uint8_t {
     LOG_BOB_EKF_MSG,
     LOG_BOB_MOTOR_MSG,
     LOG_CLOG_SYN_MSG,
+    LOG_CLOG_GT_MSG,
     //========================
 
     LOG_FORMAT_MSG = 128, // this must remain #128

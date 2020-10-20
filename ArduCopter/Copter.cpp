@@ -269,7 +269,9 @@ void Copter::fast_loop()
         //Bob: log ekf data, -1 means the primary core;
         AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
         const uint64_t end_evaluation = AP_HAL::micros64();
-        AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
+        if(scheduler.ticks() % 400 == 0){
+            AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
+        }   
     }
     
 

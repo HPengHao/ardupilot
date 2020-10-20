@@ -159,11 +159,20 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
         float error = abs(true_x[i] - y[i]);
         if(is_log(error, error_thre[i], last_log_loop[i], loopCount, max_freq)){
             //need to log
-            AP::logger().WriteCritical("CLOG", "TimeUS,stateNo,value", "Qbf",
-                                    time_us,
-                                    (int8_t)(i+1),
-                                    (float)true_x[i]
-            );
+            // AP::logger().WriteCritical("CLOG", "TimeUS,stateNo,value", "Qbf",
+            //                         time_us,
+            //                         (int8_t)(i+1),
+            //                         (float)true_x[i]
+            // );
+
+            struct log_clog_gt clog_data = {
+                LOG_PACKET_HEADER_INIT(LOG_CLOG_GT_MSG),
+                time_us: time_us,
+                stateNo: (int8_t)(i+1),
+                value: (float)true_x[i]
+            };
+            AP::logger().WriteCriticalBlock(&clog_data, sizeof(clog_data));
+
             last_log_loop[i] = loopCount;
         }
     }

@@ -354,8 +354,10 @@ void AP_Scheduler::loop()
 
     const uint64_t end_evaluation_time = AP_HAL::micros64();
 
-    AP::logger().Write_BOBL(18, (int)(end_evaluation_time-start_evaluation));
-
+    if(ticks() % 400 == 0){
+        AP::logger().Write_BOBL(18, (int)(end_evaluation_time-start_evaluation));
+    }
+    
     // check loop time
     perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
         

@@ -1849,6 +1849,85 @@ void AP_AHRS_NavEKF::Log_Write()
     get_NavEKF3().Log_Write();
 }
 
+void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
+{
+    // Write first EKF packet
+    Vector3f euler;
+    Vector2f posNE;
+    float posD;
+    Vector3f velNED;
+    Vector3f gyroUnbias;
+    float posDownDeriv;
+    Location originLLH;
+    switch (ekf_type()){
+        case EKF_TYPE2:
+            EKF2.getEulerAngles(_core,euler);
+            EKF2.getVelNED(_core,velNED);
+            EKF2.getPosNE(_core,posNE);
+            EKF2.getPosD(_core,posD);
+            posDownDeriv = EKF2.getPosDownDerivative(_core);
+            if (!EKF2.getOriginLLH(_core,originLLH)) {
+                originLLH.alt = 0;
+            }
+            break;
+        case EKF_TYPE3:
+            EKF3.getEulerAngles(_core,euler);
+            EKF3.getVelNED(_core,velNED);
+            EKF3.getPosNE(_core,posNE);
+            EKF3.getPosD(_core,posD);
+            posDownDeriv = EKF3.getPosDownDerivative(_core);
+            if (!EKF3.getOriginLLH(_core,originLLH)) {
+                originLLH.alt = 0;
+            }
+            break;
+        default:
+            return;
+    }
+
+    
+    gyroUnbias = get_gyro();
+    
+    
+    const struct log_Bob_EKF1 pkt{
+        LOG_PACKET_HEADER_INIT(LOG_BOB_EKF_MSG),
+        time_us : time_us,
+        roll    : euler.x, // roll angle, rad
+        pitch   : euler.y, // pitch angle, rad
+        yaw     : wrap_2PI(euler.z), // yaw angle, rad
+        velN    : (float)(velNED.x), // velocity North (m/s)
+        velE    : (float)(velNED.y), // velocity East (m/s)
+        velD    : (float)(velNED.z), // velocity Down (m/s)
+        posD_dot : (float)(posDownDeriv), // first derivative of down position
+        posN    : (float)(posNE.x), // metres North
+        posE    : (float)(posNE.y), // metres East
+        posD    : (float)(posD), // metres Down
+        gyrX    : gyroUnbias.x, // rad/sec
+        gyrY    : gyroUnbias.y, // rad/sec
+        gyrZ    : gyroUnbias.z, // rad/sec
+        originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
+    };
+    
+    const struct log_motors pkt2
+    {
+        LOG_PACKET_HEADER_INIT(LOG_BOB_MOTOR_MSG),
+        time_us : time_us,
+        motor1  : hal.rcout->read(0),
+        motor2  : hal.rcout->read(1),
+        motor3  : hal.rcout->read(2),
+        motor4  : hal.rcout->read(3)
+    };
+
+    // if(AP::logger().is_compress_log()){
+    //     AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN
+    // }else{
+    //     // AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
+    // }
+    AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
+    //we need to log motors data anyway.
+    AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));
+}
+
+
 void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, const float* motor_actuators_data) const
 {
     // Write first EKF packet
@@ -1911,10 +1990,10 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     {
         LOG_PACKET_HEADER_INIT(LOG_BOB_MOTOR_MSG),
         time_us : time_us,
-        motor1  : motor_actuators_data[0],
-        motor2  : motor_actuators_data[1],
-        motor3  : motor_actuators_data[2],
-        motor4  : motor_actuators_data[3]
+        motor1  : hal.rcout->read(0),
+        motor2  : hal.rcout->read(1),
+        motor3  : hal.rcout->read(2),
+        motor4  : hal.rcout->read(3)
     };
 
     if(AP::logger().is_compress_log()){

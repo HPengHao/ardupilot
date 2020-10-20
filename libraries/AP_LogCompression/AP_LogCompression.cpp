@@ -199,6 +199,6 @@ bool AP_LOGC::is_log(float error, float error_max, int last_log_loop, int curren
     }
 }
 
-float AP_LOGC::transformInput(float actuator){
-    return (((actuator*1000)+1000)-1100)/900;
+float AP_LOGC::transformInput(uint16_t pwm){
+    return ((float)(pwm-1100))/900;
 }

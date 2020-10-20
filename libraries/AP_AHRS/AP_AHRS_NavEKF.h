@@ -270,6 +270,7 @@ public:
 
     //Bob: logging customized ekf data by cores:
     void Log_Write_BKF1_W_Motors(uint8_t core, uint64_t time_us, const float* motor_actuators_data) const;
+    void Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const;
 
     // check whether compass can be bypassed for arming check in case when external navigation data is available 
     bool is_ext_nav_used_for_yaw(void) const;

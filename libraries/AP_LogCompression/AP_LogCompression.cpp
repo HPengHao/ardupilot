@@ -147,7 +147,9 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
         }
         struct log_Bob_EKF1 log_sycn = sensor_pkt;
         log_sycn.msgid = LOG_CLOG_SYN_MSG;
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
         AP::logger().WriteCriticalBlock(&log_sycn, sizeof(log_sycn));
+#endif
     }
 
     //3. get current output and calculate dx for next time.
@@ -171,7 +173,9 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
                 stateNo: (int8_t)(i+1),
                 value: (float)true_x[i]
             };
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
             AP::logger().WriteCriticalBlock(&clog_data, sizeof(clog_data));
+#endif
 
             last_log_loop[i] = loopCount;
         }

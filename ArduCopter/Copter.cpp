@@ -264,16 +264,24 @@ void Copter::fast_loop()
     // check if ekf has reset target heading or position
     check_ekf_reset();
 
-    if(AP::logger().is_compress_log()){
-        const uint64_t start_evaluation = AP_HAL::micros64();
-        //Bob: log ekf data, -1 means the primary core;
+    //Bob: log ekf data, -1 means the primary core==========
+    const uint64_t start_evaluation = AP_HAL::micros64();
+
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL // SITL: 400Hz log
+    AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
+#else // Real machines: 100Hz log
+    if(scheduler.ticks() % 4 == 0){ 
         AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
-        const uint64_t end_evaluation = AP_HAL::micros64();
-        if(scheduler.ticks() % 400 == 0){
-            AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
-        }   
     }
+#endif
     
+    
+    const uint64_t end_evaluation = AP_HAL::micros64();
+
+    if(scheduler.ticks() % 400 == 0){
+        AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
+    }
+    //========================================================
 
     // run the attitude controllers
     update_flight_mode();

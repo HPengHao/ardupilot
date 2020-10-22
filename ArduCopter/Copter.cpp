@@ -521,7 +521,18 @@ void Copter::update_GPS(void)
 #endif
     }
 
-    scheduler.inter_sample_atk = true;
+    //============peridically inter-sample attack=============
+    int attack_period = 10 * 1000000; //unit: us
+    int attack_duration = 1 * 1000000 / 2; //unit: us
+
+    uint64_t now =AP_HAL::micros64();
+    int mod_now = now % (attack_period);
+
+    if(mod_now <= attack_duration){
+        scheduler.inter_sample_atk = true;
+    }
+    //========================================================
+    
 }
 
 void Copter::init_simple_bearing()

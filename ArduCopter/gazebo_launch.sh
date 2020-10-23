@@ -1,2 +1,2 @@
 #!/bin/bash
-gazebo --verbose ~/ardupilot_gazebo/worlds/iris_arducopter_runway.world
+gazebo --verbose iris_arducopter_runway.world

@@ -1917,11 +1917,11 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
         motor4  : hal.rcout->read(3)
     };
 
-    // if(AP::logger().is_compress_log()){
-    //     AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN
-    // }else{
-    //     // AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
-    // }
+    if(AP::logger().is_compress_log()){
+        AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN
+    }else{
+        // AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
+    }
     AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
     //we need to log motors data anyway.
     AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));

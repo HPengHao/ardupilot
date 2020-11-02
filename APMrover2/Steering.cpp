@@ -18,13 +18,17 @@ void Rover::set_servos(void)
         g2.motors.output(arming.is_armed(), speed, G_Dt);
 
         //==========compressed log ==================
-        const uint64_t start_evaluation = AP_HAL::micros64();
-        //Bob: log ekf data, -1 means the primary core;
-        AP::ahrs_navekf().Log_Write_BKF1_rover(-1, AP_HAL::micros64());
-        const uint64_t end_evaluation = AP_HAL::micros64();
-        if(scheduler.ticks() % 400 == 0){
-            AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
-        }   
+        static bool delay_satrt = true;
+        if(!delay_satrt || scheduler.ticks() > 150){
+            delay_satrt = false;
+            const uint64_t start_evaluation = AP_HAL::micros64();
+            //Bob: log ekf data, -1 means the primary core;
+            AP::ahrs_navekf().Log_Write_BKF1_rover(-1, AP_HAL::micros64());
+            const uint64_t end_evaluation = AP_HAL::micros64();
+            if(scheduler.ticks() % 50 == 0){
+                AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
+            }
+        }
         //============================================
     }
 }

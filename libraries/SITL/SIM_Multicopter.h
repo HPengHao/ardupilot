@@ -48,7 +48,9 @@ protected:
     Frame *frame;
     std::vector<std::vector<double>> disturb_data;
     std::vector<std::vector<double>> sync_data;
-
+    std::vector<std::vector<double>> config_data;
+    bool is_origin_model = true;
+    bool is_add_disturb = false;
 };
 
 }

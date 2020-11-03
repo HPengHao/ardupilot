@@ -44,16 +44,33 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     frame_height = 0.1;
     ground_behavior = GROUND_BEHAVIOR_NO_MOVEMENT;
-    std::string fileNo = "00000247";
-    std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
-    std::string disturb_filePath = data_folder + fileNo + "_disturb.csv";
-    std::string syn_filePath = data_folder + fileNo + "_syn.csv";
-    readCSV(disturb_filePath, disturb_data);
-    readCSV(syn_filePath, sync_data);
-    if(disturb_data.size() > 0)
-        printf("disturb data lines: (%d, %d), %f\n", (int)disturb_data.size(), (int) disturb_data[0].size(), disturb_data[0][0]);
-    if(sync_data.size() > 0)
-        printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
+
+    std::string config_filePath = "/home/bob/ardupilot/libraries/SITL/sim_rerun/config.csv";
+    readCSV(config_filePath, config_data);
+    if(config_data.size() > 0){
+        printf("Config data: ");
+        for(double cfg: config_data[0]){
+            printf("%d, ", (int)cfg);
+        }
+        printf("\n");
+        is_origin_model = (int)config_data[0][0] == 1;
+        is_add_disturb = (int)config_data[0][1] == 1;
+    }
+    
+    if(is_add_disturb){
+        std::string fileNo = "00000247";
+        std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
+        
+        std::string disturb_filePath = data_folder + fileNo + "_disturb.csv";
+        std::string syn_filePath = data_folder + fileNo + "_syn.csv";
+        readCSV(disturb_filePath, disturb_data);
+        readCSV(syn_filePath, sync_data);
+        if(disturb_data.size() > 0)
+            printf("disturb data lines: (%d, %d), %f\n", (int)disturb_data.size(), (int) disturb_data[0].size(), disturb_data[0][0]);
+        if(sync_data.size() > 0)
+            printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
+    }
+    
 }
 
 void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel){
@@ -93,7 +110,9 @@ void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &r
 void MultiCopter::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel)
 {
     frame->calculate_forces(*this, input, rot_accel, body_accel);
-    add_disturb_forces(input, rot_accel, body_accel);
+    if(is_add_disturb){
+        add_disturb_forces(input, rot_accel, body_accel);
+    }
     add_shove_forces(rot_accel, body_accel);
     add_twist_forces(rot_accel);
 }
@@ -103,23 +122,28 @@ void MultiCopter::calculate_forces(const struct sitl_input &input, Vector3f &rot
  */
 void MultiCopter::update(const struct sitl_input &input)
 {
-    // get wind vector setup
-    update_wind(input);
+    if(is_origin_model){
+        // get wind vector setup
+        update_wind(input);
 
-    Vector3f rot_accel;
+        Vector3f rot_accel;
 
-    calculate_forces(input, rot_accel, accel_body);
+        calculate_forces(input, rot_accel, accel_body);
 
-    // estimate voltage and current
-    frame->current_and_voltage(input, battery_voltage, battery_current);
+        // estimate voltage and current
+        frame->current_and_voltage(input, battery_voltage, battery_current);
 
-    update_dynamics(rot_accel);
-    update_external_payload(input);
+        update_dynamics(rot_accel);
+        update_external_payload(input);
 
-    // update lat/lon/altitude
-    update_position();
-    time_advance();
+        // update lat/lon/altitude
+        update_position();
+        time_advance();
 
-    // update magnetic field
-    update_mag_field_bf();
+        // update magnetic field
+        update_mag_field_bf();
+    }else{
+        
+    }
+    
 }

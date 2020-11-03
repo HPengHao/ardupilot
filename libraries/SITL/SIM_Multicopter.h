@@ -21,6 +21,7 @@
 #include "SIM_Aircraft.h"
 #include "SIM_Motor.h"
 #include "SIM_Frame.h"
+#include "fileOperation.h"
 
 namespace SITL {
 
@@ -39,10 +40,15 @@ public:
         return new MultiCopter(frame_str);
     }
 
+    void add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel);
+
 protected:
     // calculate rotational and linear accelerations
     void calculate_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel);
     Frame *frame;
+    std::vector<std::vector<double>> disturb_data;
+    std::vector<std::vector<double>> sync_data;
+
 };
 
 }

@@ -18,6 +18,7 @@
 
 #include "SIM_Multicopter.h"
 #include <AP_Motors/AP_Motors.h>
+#include "fileOperation.h"
 
 #include <stdio.h>
 
@@ -43,12 +44,56 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     frame_height = 0.1;
     ground_behavior = GROUND_BEHAVIOR_NO_MOVEMENT;
+    std::string fileNo = "00000247";
+    std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
+    std::string disturb_filePath = data_folder + fileNo + "_disturb.csv";
+    std::string syn_filePath = data_folder + fileNo + "_syn.csv";
+    readCSV(disturb_filePath, disturb_data);
+    readCSV(syn_filePath, sync_data);
+    if(disturb_data.size() > 0)
+        printf("disturb data lines: (%d, %d), %f\n", (int)disturb_data.size(), (int) disturb_data[0].size(), disturb_data[0][0]);
+    if(sync_data.size() > 0)
+        printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
+}
+
+void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel){
+    static bool armed = false;
+    static uint64_t arm_time;
+    if(!armed && input.servos[0] > 1010){
+        armed = true;
+        arm_time = time_now_us;
+    }
+    if(!armed){
+        return;
+    }
+    static int idx = 0;
+    if(idx >= (int)disturb_data.size()){
+        return;
+    }
+    if(time_now_us-arm_time > (uint64_t) disturb_data[idx][0]){
+        while((uint64_t) disturb_data[idx][0] < time_now_us-arm_time){
+            idx++;
+            if(idx >= (int)disturb_data.size()){
+                return;
+            }
+        }
+        idx--;// find the closest disturbance time less than time_now_us
+        rot_accel.x += (float)disturb_data[idx][4];
+        rot_accel.y += (float)disturb_data[idx][5];
+        rot_accel.z += (float)disturb_data[idx][6];
+        // earth frame linear accel (disturbance)
+        Vector3f lin_accel_ef = Vector3f((float)disturb_data[idx][1], 
+                                        (float)disturb_data[idx][2], 
+                                        (float)disturb_data[idx][3]);
+        body_accel += get_dcm().transposed() * lin_accel_ef;
+    }
 }
 
 // calculate rotational and linear accelerations
 void MultiCopter::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel)
 {
     frame->calculate_forces(*this, input, rot_accel, body_accel);
+    add_disturb_forces(input, rot_accel, body_accel);
     add_shove_forces(rot_accel, body_accel);
     add_twist_forces(rot_accel);
 }

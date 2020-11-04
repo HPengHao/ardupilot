@@ -39,22 +39,7 @@ void AP_LOGC::quadrotor_m(float, const float x[12], const float u[4], float a, f
     dx[11] = (I_x - I_y) / I_z * b_x[9] * b_x[10] + K_Q / I_z * (((-b_x[12] - b_x[13]) + b_x[14]) + b_x[15]);
 
     
-    //     %% addtional effects here
-    //  air resistance
-    //  *0.6538
-    // rotational air resitance
-    //  *0.2778
-    for (i = 0; i < 3; i++)
-    {
-        dx[6 + i] += -x[6 + i] * 9.80665F / 15.0F;
-        dx[9 + i] += -x[9 + i] * 6.98131704F / 25.1327419F;
-    }
-    float frame_height = 0.1;
-    if ((x[2] - frame_height < 0.001F) && (dx[8] <= 0.0F))
-    {
-        //  on ground
-        dx[8] = 0.0F;
-    }
+    
 
     //
     for (i = 0; i < 12; i++)
@@ -180,6 +165,19 @@ void AP_LOGC::compressionLog(const struct log_Bob_EKF1 & sensor_pkt, const struc
 
     //3. get current output and calculate dx for next time.
     AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y);
+    //air resistence in static air
+    for (int i = 0; i < 3; i++)
+    {
+        dx[6 + i] += -x[6 + i] * 9.80665F / 15.0F;
+        dx[9 + i] += -x[9 + i] * 6.98131704F / 25.1327419F;
+    }
+    //on ground check
+    float frame_height = 0.1;
+    if ((x[2] - frame_height < 0.001F) && (dx[8] <= 0.0F))
+    {
+        //  on ground
+        dx[8] = 0.0F;
+    }
     
     //compression log
     for (int i = 0; i < 12; i++)

@@ -199,6 +199,12 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
 
     //1. calculate dx
     AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y_out);
+    // add static air resistence (wind parameter won't have any effect)
+    for (int i = 0; i < 3; i++)
+    {
+        dx[6 + i] += -x[6 + i] * (GRAVITY_MSS/frame->terminal_velocity);
+        dx[9 + i] += -x[9 + i] * radians(400.0) / frame->terminal_rotation_rate;
+    }
     
     //2. add disturbance
     static uint idx_dis = 0;

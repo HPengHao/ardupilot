@@ -19,6 +19,7 @@
 #include "SIM_Multicopter.h"
 #include <AP_Motors/AP_Motors.h>
 #include "fileOperation.h"
+#include <AP_LogCompression/AP_LogCompression.h>
 
 #include <stdio.h>
 
@@ -70,16 +71,14 @@ MultiCopter::MultiCopter(const char *frame_str) :
         if(sync_data.size() > 0)
             printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
     }
+
+    if(!is_origin_model){
+        x[5] = M_PI/2; // in ENU frame
+    }
     
 }
 
 void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel){
-    static bool armed = false;
-    static uint64_t arm_time;
-    if(!armed && input.servos[0] > 1010){
-        armed = true;
-        arm_time = time_now_us;
-    }
     if(!armed){
         return;
     }
@@ -116,13 +115,153 @@ void MultiCopter::calculate_forces(const struct sitl_input &input, Vector3f &rot
     add_shove_forces(rot_accel, body_accel);
     add_twist_forces(rot_accel);
 }
+
+void MultiCopter::state_sycn_origin2new(){
+    float r, p, y;
+    dcm.to_euler(&r, &p, &y);
+
+    x_NED[0] = position.x;  
+    x_NED[1] = position.y;  
+    x_NED[2] = position.z;
+    x_NED[3] = r;           
+    x_NED[4] = p;           
+    x_NED[5] = y;
+    x_NED[6] = velocity_ef.x;
+    x_NED[7] = velocity_ef.y;
+    x_NED[8] = velocity_ef.z;
+    x_NED[9] = gyro.x;
+    x_NED[10] = gyro.y;
+    x_NED[11] = gyro.z;
+
+    AP_LOGC::transfromNED2ENU(x_NED, x);
+    for(int i = 0; i < 12; i++){
+        dx[i] = 0;
+    }
+}
+
+void MultiCopter::state_sycn_new2origin(){
+    AP_LOGC::transfromENU2NED(x, x_NED);
+    AP_LOGC::transfromENU2NED(dx, dx_NED);
+
+    position.x = x_NED[0];
+    position.y = x_NED[1];
+    position.z = x_NED[2];
+    dcm.from_euler(x_NED[3], x_NED[4], x_NED[5]);
+    dcm.normalize();
+    velocity_ef.x = x_NED[6];
+    velocity_ef.y = x_NED[7];
+    velocity_ef.z = x_NED[8];
+    gyro.x = x_NED[9];
+    gyro.y = x_NED[10];
+    gyro.z = x_NED[11];
+
+    gyro_prev = gyro;
+
+    ang_accel.x = dx_NED[9];
+    ang_accel.y = dx_NED[10];
+    ang_accel.z = dx_NED[11];
+
+    Vector3f accel_earth(dx_NED[6], dx_NED[7], dx_NED[8]);
+
+    // work out acceleration as seen by the accelerometers. It sees the kinematic
+    // acceleration (ie. real movement), plus gravity
+    accel_body = dcm.transposed() * (accel_earth + Vector3f(0.0f, 0.0f, -GRAVITY_MSS));
+
+    // velocity relative to air mass, in earth frame
+    velocity_air_ef = velocity_ef + wind_ef;
+
+    // velocity relative to airmass in body frame
+    velocity_air_bf = dcm.transposed() * velocity_air_ef;
+
+    // airspeed
+    airspeed = velocity_air_ef.length();
+
+    // airspeed as seen by a fwd pitot tube (limited to 120m/s)
+    airspeed_pitot = constrain_float(velocity_air_bf * Vector3f(1.0f, 0.0f, 0.0f), 0.0f, 120.0f);
+
+
+}
+
+void MultiCopter::new_model_step(const struct sitl_input &input){
+    if(is_last_origin){
+        state_sycn_origin2new();
+        is_last_origin = false;
+    }
+
+    //prepare dt, unit: s
+    const float dt = frame_time_us * 1.0e-6f;
+    
+    //prepare input
+    u[0] = AP_LOGC::transformInput(input.servos[0]);
+    u[1] = AP_LOGC::transformInput(input.servos[1]);
+    u[2] = AP_LOGC::transformInput(input.servos[2]);
+    u[3] = AP_LOGC::transformInput(input.servos[3]);
+
+    //1. calculate dx
+    AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y_out);
+    
+    //2. add disturbance
+    static uint idx_dis = 0;
+    uint64_t time_from_armed = time_now_us - arm_time;
+    
+    if(idx_dis < disturb_data.size() && time_from_armed > (uint64_t) disturb_data[idx_dis][0]){
+        while((uint64_t) disturb_data[idx_dis][0] < time_from_armed){
+            idx_dis++;
+            if(idx_dis >= disturb_data.size()){
+                break;
+            }
+        }
+        if(idx_dis < disturb_data.size()){
+            idx_dis--;// find the closest disturbance time less than time_now_us
+            //data in file is in NED frame, apply according to ENU frame
+            dx[6] += disturb_data[idx_dis][2]; // acc_y
+            dx[7] += disturb_data[idx_dis][1]; // acc_x
+            dx[8] += (-disturb_data[idx_dis][3]); // -acc_z
+            dx[9] += disturb_data[idx_dis][4]; // ang_acc_x
+            dx[10] += (-disturb_data[idx_dis][5]); // -ang_acc_y
+            dx[11] += (-disturb_data[idx_dis][6]); // -ang_acc_z
+        }
+    }
+
+    //3. update old states.
+    AP_LOGC::updateState(x, dx, dt); 
+
+    //4. test if we need synchronization. If so, synchronize.
+    // static uint idx = 0;
+    
+    // if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+    //     while(time_from_armed >= (uint64_t)sync_data[idx][0]){
+    //         idx++;
+    //         if(idx >= sync_data.size()){
+    //             break;
+    //         }
+    //     }
+    //     idx--;
+    //     for (size_t i = 0; i < 12; i++)
+    //     {
+    //         x_NED[i] = sync_data[idx][i+1];
+    //     }
+    //     AP_LOGC::transfromNED2ENU(x_NED, x);
+    //     idx += 5; // sync every 5s
+    // }
+
+    //5. sycn with origin model variables
+    state_sycn_new2origin();
+
+}
     
 /*
   update the multicopter simulation by one time step
  */
 void MultiCopter::update(const struct sitl_input &input)
 {
-    if(is_origin_model){
+    if(!armed && input.servos[0] > 1010){
+        armed = true;
+        arm_time = time_now_us;
+    }
+    if(on_ground()|| !armed || is_origin_model){
+        is_last_origin = true;
+
         // get wind vector setup
         update_wind(input);
 
@@ -143,6 +282,21 @@ void MultiCopter::update(const struct sitl_input &input)
         // update magnetic field
         update_mag_field_bf();
     }else{
+        // get wind vector setup
+        update_wind(input);
+
+        frame->current_and_voltage(input, battery_voltage, battery_current);
+
+        new_model_step(input);
+
+        update_external_payload(input);
+
+        // update lat/lon/altitude
+        update_position();
+        time_advance();
+
+        // update magnetic field
+        update_mag_field_bf();
         
     }
     

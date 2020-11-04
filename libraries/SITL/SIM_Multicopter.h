@@ -51,6 +51,31 @@ protected:
     std::vector<std::vector<double>> config_data;
     bool is_origin_model = true;
     bool is_add_disturb = false;
+    uint64_t arm_time;
+    bool armed = false;
+    bool is_last_origin = true;
+private:
+    //parameters
+    float x[12] = {0}; //in ENU Frame
+    float x_NED[12] = {};
+    float dx[12] = {0};
+    float dx_NED[12] = {0};
+    float y_out[12] = {0};
+    float u[4] = {0};
+    float a = 0.128364;
+    float b = 0.128364;
+    float c = 0.128364;
+    float d = 0.128364;
+    float m = 1.5;
+    float I_x = 0.015;
+    float I_y = 0.015;
+    float I_z = 0.015;
+    float K_T = 7.21077; 
+    float K_Q = 0.10472; 
+
+    void new_model_step(const struct sitl_input &input);
+    void state_sycn_origin2new();
+    void state_sycn_new2origin();
 };
 
 }

@@ -78,6 +78,32 @@ void AP_LOGC::transfromNED2ENU(float state[12]){
     
 }
 
+void AP_LOGC::transfromNED2ENU(float state[12], float x[12]){
+    x[0] = state[1];     x[1] = state[0];     x[2] = -state[2];
+    x[3] = state[3];     x[4] = -state[4];    x[5] = wrap_2PI(-state[5] + M_PI/2);
+    x[6] = state[7];    x[7] = state[6];    x[8] = -state[8];
+    x[9] = state[9];    x[10] = -state[10];  x[11] = -state[11];
+}
+
+
+void AP_LOGC::transfromENU2NED(float in[12], float out[12]){
+    out[0] = in[1];     
+    out[1] = in[0];     
+    out[2] = -in[2];
+    out[3] = in[3];
+    out[4] = -in[4];
+    out[5] = wrap_2PI(-(in[5] - M_PI/2));
+    out[6] = in[7];
+    out[7] = in[6];
+    out[8] = -in[8];
+    out[9] = in[9];
+    out[10] = -in[10];
+    out[11] = -in[11];
+
+}
+
+
+
 void AP_LOGC::updateState(float x[12], float dx[12], float dt){
     for (int i = 0; i < 12; i++)
     {
@@ -196,5 +222,5 @@ bool AP_LOGC::is_log(float error, float error_max, int last_log_loop, int curren
 }
 
 float AP_LOGC::transformInput(uint16_t pwm){
-    return ((float)(pwm-1100))/900;
+    return constrain_float(((float)(pwm-1100))/900.0, 0.0f, 1.0f);
 }

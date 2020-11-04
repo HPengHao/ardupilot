@@ -261,7 +261,7 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
  */
 void MultiCopter::update(const struct sitl_input &input)
 {
-    if(!armed && input.servos[0] > 1010){
+    if(!armed && input.servos[0] >= 1010){
         armed = true;
         arm_time = time_now_us;
     }

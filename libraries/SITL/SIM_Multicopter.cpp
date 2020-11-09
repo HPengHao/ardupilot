@@ -63,11 +63,22 @@ MultiCopter::MultiCopter(const char *frame_str) :
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string disturb_filePath = data_folder + fileNo + "_disturb.csv";
+        std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
+        std::string rot_disturb_filePath = data_folder + fileNo + "_disturb_rot.csv";
         std::string syn_filePath = data_folder + fileNo + "_syn.csv";
         readCSV(disturb_filePath, disturb_data);
+        readCSV(lin_disturb_filePath, disturb_data_lin);
+        readCSV(rot_disturb_filePath, disturb_data_rot);
+        disturb_data_arr[0] = disturb_data_lin;
+        disturb_data_arr[1] = disturb_data_rot;
+
         readCSV(syn_filePath, sync_data);
         if(disturb_data.size() > 0)
             printf("disturb data lines: (%d, %d), %f\n", (int)disturb_data.size(), (int) disturb_data[0].size(), disturb_data[0][0]);
+        if(disturb_data_lin.size() > 0)
+            printf("linear disturb data lines: (%d, %d), %f\n", (int)disturb_data_lin.size(), (int) disturb_data_lin[0].size(), disturb_data_lin[0][0]);
+        if(disturb_data_rot.size() > 0)
+            printf("rotation disturb data lines: (%d, %d), %f\n", (int)disturb_data_rot.size(), (int) disturb_data_rot[0].size(), disturb_data_rot[0][0]);
         if(sync_data.size() > 0)
             printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
     }
@@ -207,27 +218,55 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     }
     
     //2. add disturbance
-    static uint idx_dis = 0;
     uint64_t time_from_armed = time_now_us - arm_time;
     
-    if(idx_dis < disturb_data.size() && time_from_armed > (uint64_t) disturb_data[idx_dis][0]){
-        while((uint64_t) disturb_data[idx_dis][0] < time_from_armed){
-            idx_dis++;
-            if(idx_dis >= disturb_data.size()){
-                break;
+    // static uint idx_dis = 0;
+    // if(idx_dis < disturb_data.size() && time_from_armed > (uint64_t) disturb_data[idx_dis][0]){
+    //     while((uint64_t) disturb_data[idx_dis][0] < time_from_armed){
+    //         idx_dis++;
+    //         if(idx_dis >= disturb_data.size()){
+    //             break;
+    //         }
+    //     }
+    //     if(idx_dis < disturb_data.size()){
+    //         idx_dis--;// find the closest disturbance time less than time_now_us
+    //         //data in file is in NED frame, apply according to ENU frame
+    //         dx[6] += disturb_data[idx_dis][2]; // acc_y
+    //         dx[7] += disturb_data[idx_dis][1]; // acc_x
+    //         dx[8] += (-disturb_data[idx_dis][3]); // -acc_z
+    //         dx[9] += disturb_data[idx_dis][4]; // ang_acc_x
+    //         dx[10] += (-disturb_data[idx_dis][5]); // -ang_acc_y
+    //         dx[11] += (-disturb_data[idx_dis][6]); // -ang_acc_z
+    //     }
+    // }
+
+    static uint idxs_dis[2] = {0};
+    for (int i = 0; i < 2; i++)
+    {
+        if(idxs_dis[i] < disturb_data_arr[i].size() && time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
+            while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
+                idxs_dis[i]++;
+                if(idxs_dis[i] >= disturb_data_arr[i].size()){
+                    break;
+                }
+            }
+            if(idxs_dis[i] < disturb_data_arr[i].size()){
+                idxs_dis[i]--;// find the closest disturbance time less than time_now_us
+                //data in file is in NED frame, apply according to ENU frame
+                if(i == 0){
+                    dx[6] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
+                    dx[7] +=   disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
+                    dx[8] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -acc_z
+                }else{
+                    dx[9] +=    disturb_data_arr[i][idxs_dis[i]][1]; // ang_acc_x
+                    dx[10] += (-disturb_data_arr[i][idxs_dis[i]][2]); // -ang_acc_y
+                    dx[11] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -ang_acc_z
+                }
+                
             }
         }
-        if(idx_dis < disturb_data.size()){
-            idx_dis--;// find the closest disturbance time less than time_now_us
-            //data in file is in NED frame, apply according to ENU frame
-            dx[6] += disturb_data[idx_dis][2]; // acc_y
-            dx[7] += disturb_data[idx_dis][1]; // acc_x
-            dx[8] += (-disturb_data[idx_dis][3]); // -acc_z
-            dx[9] += disturb_data[idx_dis][4]; // ang_acc_x
-            dx[10] += (-disturb_data[idx_dis][5]); // -ang_acc_y
-            dx[11] += (-disturb_data[idx_dis][6]); // -ang_acc_z
-        }
     }
+    
 
     //3. update old states.
     AP_LOGC::updateState(x, dx, dt); 

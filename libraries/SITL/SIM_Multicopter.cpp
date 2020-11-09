@@ -62,19 +62,15 @@ MultiCopter::MultiCopter(const char *frame_str) :
         std::string fileNo = "00000247";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
-        std::string disturb_filePath = data_folder + fileNo + "_disturb.csv";
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
         std::string rot_disturb_filePath = data_folder + fileNo + "_disturb_rot.csv";
         std::string syn_filePath = data_folder + fileNo + "_syn.csv";
-        readCSV(disturb_filePath, disturb_data);
         readCSV(lin_disturb_filePath, disturb_data_lin);
         readCSV(rot_disturb_filePath, disturb_data_rot);
         disturb_data_arr[0] = disturb_data_lin;
         disturb_data_arr[1] = disturb_data_rot;
 
         readCSV(syn_filePath, sync_data);
-        if(disturb_data.size() > 0)
-            printf("disturb data lines: (%d, %d), %f\n", (int)disturb_data.size(), (int) disturb_data[0].size(), disturb_data[0][0]);
         if(disturb_data_lin.size() > 0)
             printf("linear disturb data lines: (%d, %d), %f\n", (int)disturb_data_lin.size(), (int) disturb_data_lin[0].size(), disturb_data_lin[0][0]);
         if(disturb_data_rot.size() > 0)
@@ -93,26 +89,33 @@ void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &r
     if(!armed){
         return;
     }
-    static int idx = 0;
-    if(idx >= (int)disturb_data.size()){
-        return;
-    }
-    if(time_now_us-arm_time > (uint64_t) disturb_data[idx][0]){
-        while((uint64_t) disturb_data[idx][0] < time_now_us-arm_time){
-            idx++;
-            if(idx >= (int)disturb_data.size()){
-                return;
+    uint64_t time_from_armed = time_now_us - arm_time;
+    static uint idxs_dis[2] = {0};
+    for (int i = 0; i < 2; i++)
+    {
+        if(idxs_dis[i] < disturb_data_arr[i].size() && time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
+            while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
+                idxs_dis[i]++;
+                if(idxs_dis[i] >= disturb_data_arr[i].size()){
+                    break;
+                }
+            }
+            if(idxs_dis[i] < disturb_data_arr[i].size()){
+                idxs_dis[i]--;// find the closest disturbance time less than time_now_us
+                //data in file is in NED frame, apply according to ENU frame
+                if(i == 0){
+                    Vector3f lin_accel_ef = Vector3f((float)disturb_data_arr[i][idxs_dis[i]][1], 
+                                                    (float)disturb_data_arr[i][idxs_dis[i]][2], 
+                                                    (float)disturb_data_arr[i][idxs_dis[i]][3]);
+                    body_accel += get_dcm().transposed() * lin_accel_ef;
+                }else{
+                    rot_accel.x += (float)disturb_data_arr[i][idxs_dis[i]][1];
+                    rot_accel.y += (float)disturb_data_arr[i][idxs_dis[i]][2];
+                    rot_accel.z += (float)disturb_data_arr[i][idxs_dis[i]][3];
+                }
+                
             }
         }
-        idx--;// find the closest disturbance time less than time_now_us
-        rot_accel.x += (float)disturb_data[idx][4];
-        rot_accel.y += (float)disturb_data[idx][5];
-        rot_accel.z += (float)disturb_data[idx][6];
-        // earth frame linear accel (disturbance)
-        Vector3f lin_accel_ef = Vector3f((float)disturb_data[idx][1], 
-                                        (float)disturb_data[idx][2], 
-                                        (float)disturb_data[idx][3]);
-        body_accel += get_dcm().transposed() * lin_accel_ef;
     }
 }
 
@@ -219,26 +222,6 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     
     //2. add disturbance
     uint64_t time_from_armed = time_now_us - arm_time;
-    
-    // static uint idx_dis = 0;
-    // if(idx_dis < disturb_data.size() && time_from_armed > (uint64_t) disturb_data[idx_dis][0]){
-    //     while((uint64_t) disturb_data[idx_dis][0] < time_from_armed){
-    //         idx_dis++;
-    //         if(idx_dis >= disturb_data.size()){
-    //             break;
-    //         }
-    //     }
-    //     if(idx_dis < disturb_data.size()){
-    //         idx_dis--;// find the closest disturbance time less than time_now_us
-    //         //data in file is in NED frame, apply according to ENU frame
-    //         dx[6] += disturb_data[idx_dis][2]; // acc_y
-    //         dx[7] += disturb_data[idx_dis][1]; // acc_x
-    //         dx[8] += (-disturb_data[idx_dis][3]); // -acc_z
-    //         dx[9] += disturb_data[idx_dis][4]; // ang_acc_x
-    //         dx[10] += (-disturb_data[idx_dis][5]); // -ang_acc_y
-    //         dx[11] += (-disturb_data[idx_dis][6]); // -ang_acc_z
-    //     }
-    // }
 
     static uint idxs_dis[2] = {0};
     for (int i = 0; i < 2; i++)

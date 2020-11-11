@@ -310,6 +310,8 @@ void Aircraft::fill_fdm(struct sitl_fdm &fdm)
 {
     if (use_smoothing) {
         smooth_sensors();
+    }else{
+        smoothing.enabled = false;
     }
     fdm.timestamp_us = time_now_us;
     if (fdm.home.lat == 0 && fdm.home.lng == 0) {

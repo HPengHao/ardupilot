@@ -22,7 +22,7 @@
 #include <AP_LogCompression/AP_LogCompression.h>
 
 #include <stdio.h>
-
+#define USE_SCYN_SIM 1
 using namespace SITL;
 
 MultiCopter::MultiCopter(const char *frame_str) :
@@ -255,24 +255,34 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     AP_LOGC::updateState(x, dx, dt); 
 
     //4. test if we need synchronization. If so, synchronize.
-    // static uint idx = 0;
-    
-    // if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
-    //     while(time_from_armed >= (uint64_t)sync_data[idx][0]){
-    //         idx++;
-    //         if(idx >= sync_data.size()){
-    //             break;
-    //         }
-    //     }
-    //     idx--;
-    //     for (size_t i = 0; i < 12; i++)
-    //     {
-    //         x_NED[i] = sync_data[idx][i+1];
-    //     }
-    //     AP_LOGC::transfromNED2ENU(x_NED, x);
-    //     idx += 5; // sync every 5s
-    // }
 
+#if USE_SCYN_SIM == 1
+    static uint idx = 0;
+    
+    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+        while(time_from_armed >= (uint64_t)sync_data[idx][0]){
+            idx++;
+            if(idx >= sync_data.size()){
+                break;
+            }
+        }
+        idx--;
+        for (size_t i = 0; i < 12; i++)
+        {
+            x_NED[i] = sync_data[idx][i+1];
+        }
+
+        float x_ENU[12] = {0};
+        AP_LOGC::transfromNED2ENU(x_NED, x_ENU);
+
+        for (size_t i = 0; i < 6; i++)
+        {
+            x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
+        }
+        
+        idx += 1; // sync every 1s
+    }
+#endif
     //5. sycn with origin model variables
     state_sycn_new2origin();
 
@@ -310,6 +320,8 @@ void MultiCopter::update(const struct sitl_input &input)
         // update magnetic field
         update_mag_field_bf();
     }else{
+        use_smoothing = false;
+
         // get wind vector setup
         update_wind(input);
 

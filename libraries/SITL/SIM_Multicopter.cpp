@@ -59,7 +59,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     
     if(is_add_disturb){
-        std::string fileNo = "00000247";
+        std::string fileNo = "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -293,7 +293,7 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
  */
 void MultiCopter::update(const struct sitl_input &input)
 {
-    if(!armed && input.servos[0] >= 1010){
+    if(!armed && input.servos[0] >= 1300){
         armed = true;
         arm_time = time_now_us;
     }
@@ -327,7 +327,7 @@ void MultiCopter::update(const struct sitl_input &input)
 
         frame->current_and_voltage(input, battery_voltage, battery_current);
 
-        new_model_step(input);
+        new_model_step(input); // main model code
 
         update_external_payload(input);
 

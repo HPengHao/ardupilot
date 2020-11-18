@@ -20,6 +20,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "fileOperation.h"
+#include <AP_LogCompression/AP_LogCompression.h>
 
 namespace SITL {
 
@@ -41,6 +43,8 @@ SimRover::SimRover(const char *frame_str) :
         max_accel = 14;
         max_speed = 4;
     }
+    
+    
 }
 
 
@@ -89,6 +93,12 @@ float SimRover::calc_lat_accel(float steering_angle, float speed)
  */
 void SimRover::update(const struct sitl_input &input)
 {
+
+    if(!armed && abs(input.servos[2] - 1500) >= 40){
+        armed = true;
+        arm_time = time_now_us;
+    }
+
     float steering, throttle;
 
     // if in skid steering mode the steering and throttle values are used for motor1 and motor2
@@ -120,6 +130,14 @@ void SimRover::update(const struct sitl_input &input)
     // linear acceleration in m/s/s - very crude model
     float accel = max_accel * (target_speed - speed) / max_speed;
 
+    //============== Add wind effect for rover ===============
+    if(armed){
+        Vector3f air_resistance = -velocity_air_ef * (GRAVITY_MSS/15);
+        Vector3f air_resis_bf = get_dcm().transposed() * air_resistance;
+        accel += air_resis_bf.x;
+    }
+    //========================================================
+
     gyro = Vector3f(0,0,radians(yaw_rate));
 
     // update attitude
@@ -148,6 +166,19 @@ void SimRover::update(const struct sitl_input &input)
 
     // new position vector
     position += velocity_ef * delta_time;
+
+    //============== Add wind effect for rover ===============
+    update_wind(input);
+
+     // velocity relative to air mass, in earth frame
+    velocity_air_ef = velocity_ef + wind_ef;
+
+    // velocity relative to airmass in body frame
+    velocity_air_bf = dcm.transposed() * velocity_air_ef;
+
+    // airspeed
+    airspeed = velocity_air_ef.length();
+    //========================================================
 
     update_external_payload(input);
 

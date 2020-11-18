@@ -9,7 +9,9 @@ namespace AP_LOGC{
     void quadrotor_m(float, const float x[12], const float u[4], float a, float
                  b, float c, float d, float m, float I_x, float I_y, float
                  I_z, float K_T, float K_Q, float dx[12], float y[12]);
-    
+    void rover_m(float, const float x[6], const float i[2], float m, float
+                    a, float b, float Cx, float Cy, float CA, float dx[6], float
+                    y[6]);
     void transfromNED2ENU(float x[12]);
     void transfromNED2ENU(float in[12], float out[12]);
     void transfromENU2NED(float in[12], float out[12]);

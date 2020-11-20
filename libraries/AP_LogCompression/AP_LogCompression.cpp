@@ -1,7 +1,7 @@
 #include "AP_LogCompression.h"
 #include <AP_Logger/AP_Logger.h>
 
-void rover_m(float, const float x[6], const float i[2], float m, float a, float
+void AP_LOGC::rover_m(float, const float x[6], const float i[2], float m, float a, float
              b, float Cx, float Cy, float CA, float dx[6], float y[6])
 {
   float c;
@@ -23,23 +23,24 @@ void rover_m(float, const float x[6], const float i[2], float m, float a, float
   //      Cy = p(5);
   //      CA = p(6);
   //      %[x y yaw vx vy r]
-  dx[0] = x[3] * std::cos(x[2]) - x[4] * std::sin(x[2]);
-  dx[1] = x[3] * std::sin(x[2]) + x[4] * std::cos(x[2]);
+  dx[0] = x[3] * cosf(x[2]) - x[4] * sinf(x[2]);
+  dx[1] = x[3] * sinf(x[2]) + x[4] * cosf(x[2]);
   dx[2] = x[5];
-  dx[4] = -x[3] * x[5] + 1.0F / m * ((Cx * (i[1] + i[1]) * std::sin(i[0]) + 2.0F
-    * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * std::cos(i[0])) + 2.0F * Cy * (b *
+  dx[3] = (x[4] * x[5] + 1.0F / m * (((Cx * (i[1] + i[1]) * cosf(i[0]) -
+            2.0F * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * sinf(i[0])) +
+            Cx * 0.0F) - CA * (x[3] * x[3])));
+  dx[4] = -x[3] * x[5] + 1.0F / m * ((Cx * (i[1] + i[1]) * sinf(i[0]) + 2.0F
+    * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * cosf(i[0])) + 2.0F * Cy * (b *
     x[5] - x[4]) / x[3]);
   c = (a + b) / 2.0F;
-  dx[5] = 1.0F / (c * c * m) * (a * (Cx * (i[1] + i[1]) * std::sin(i[0]) + 2.0F *
-    Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * std::cos(i[0])) - 2.0F * b * Cy *
+  dx[5] = 1.0F / (c * c * m) * (a * (Cx * (i[1] + i[1]) * sinf(i[0]) + 2.0F *
+    Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * cosf(i[0])) - 2.0F * b * Cy *
     (b * x[5] - x[4]) / x[3]);
 
   
   //  air resistance
   //  *0.6538
-  dx[3] = (x[4] * x[5] + 1.0F / m * (((Cx * (i[1] + i[1]) * std::cos(i[0]) -
-              2.0F * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * std::sin(i[0])) +
-             Cx * 0.0F) - CA * (x[3] * x[3]))) + -x[3] * 9.80665F / 15.0F;
+//   dx[3] += -x[3] * 9.80665F / 15.0F;
 
   // (NED world frame)
   // y(1): Postion X
@@ -52,8 +53,8 @@ void rover_m(float, const float x[6], const float i[2], float m, float a, float
   y[0] = x[0];
   y[1] = x[1];
   y[2] = x[2];
-  y[3] = x[3] * std::cos(x[2]) - x[4] * std::sin(x[2]);
-  y[4] = x[3] * std::sin(x[2]) + x[4] * std::cos(x[2]);
+  y[3] = x[3] * cosf(x[2]) - x[4] * sinf(x[2]);
+  y[4] = x[3] * sinf(x[2]) + x[4] * cosf(x[2]);
   y[5] = x[5];
 
 
@@ -140,6 +141,26 @@ void AP_LOGC::transfromNED2ENU(float state[12], float x[12])
     x[9] = state[9];
     x[10] = -state[10];
     x[11] = -state[11];
+}
+
+void AP_LOGC::transfromef2bf_rover(float in[6], float out[6]){
+    out[0] = in[0];
+    out[1] = in[1];
+    out[2] = in[2];
+    out[5] = in[5];
+
+    out[3] = cosf(in[2]) * in[3] + sinf(in[2]) * in[4];
+    out[4] = -sinf(in[2]) * in[3] + cosf(in[2]) * in[4];
+}
+
+void AP_LOGC::transfrombf2ef_rover(float in[6], float out[6]){
+    out[0] = in[0];
+    out[1] = in[1];
+    out[2] = in[2];
+    out[5] = in[5];
+
+    out[3] = cosf(in[2]) * in[3] - sinf(in[2]) * in[4];
+    out[4] = sinf(in[2]) * in[3] + cosf(in[2]) * in[4];
 }
 
 void AP_LOGC::transfromENU2NED(float in[12], float out[12])

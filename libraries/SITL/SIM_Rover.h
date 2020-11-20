@@ -19,6 +19,7 @@
 #pragma once
 
 #include "SIM_Aircraft.h"
+#include "fileOperation.h"
 
 namespace SITL {
 
@@ -48,8 +49,32 @@ private:
     float turn_circle(float steering);
     float calc_yaw_rate(float steering, float speed);
     float calc_lat_accel(float steering_angle, float speed);
+    std::vector<std::vector<double>> disturb_data_lin;
+    std::vector<std::vector<double>> disturb_data_rot;
+    std::vector<std::vector<double>> disturb_data_arr[2];
+    std::vector<std::vector<double>> sync_data;
+    std::vector<std::vector<double>> config_data;
+    bool is_origin_model = true;
+    bool is_add_disturb = false;
+    bool is_last_origin = true;
     uint64_t arm_time;
     bool armed = false;
+
+    //parameters
+    float x[6] = {0}; //velocity in body Frame, position in NED frame
+    float dx[6] = {0};
+    float y_out[6] = {0}; //velocity in earth Frame
+    float u[2] = {0};
+    float m = 1.7;
+    float a = 0.227542;
+    float b = 0.817809;
+    float Cx = 17.527;
+    float Cy = 20.4658;
+    float CA = 0.182353;
+
+    void new_model_step(const struct sitl_input &input);
+    void state_sycn_origin2new();
+    void state_sycn_new2origin();
 };
 
 } // namespace SITL

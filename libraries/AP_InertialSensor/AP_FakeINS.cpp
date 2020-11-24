@@ -41,21 +41,21 @@ const Vector3f &AP_InertialSensor::get_gyro(uint8_t i) const{
 //     return false;
 // }
 
-const Vector3f     &AP_InertialSensor::get_fake_accel(const Vector3f & true_accel) const{
-        (*fake_accel_ptr) = true_accel;
-        fake_accel_ptr->x += 10;
-        fake_accel_ptr->z -= 15;
-        return (*fake_accel_ptr);
-}
+// const Vector3f     &AP_InertialSensor::get_fake_accel(const Vector3f & true_accel) const{
+//         (*fake_accel_ptr) = true_accel;
+//         fake_accel_ptr->x += 10;
+//         fake_accel_ptr->z -= 15;
+//         return (*fake_accel_ptr);
+// }
 
 
 
-const Vector3f     &AP_InertialSensor::get_fake_gyro(const Vector3f & true_gyro) const{
-        (*fake_gyro_ptr) = true_gyro;
-        fake_gyro_ptr->x += 2;
-        fake_gyro_ptr->z += 2;
-        return (*fake_gyro_ptr);
-}
+// const Vector3f     &AP_InertialSensor::get_fake_gyro(const Vector3f & true_gyro) const{
+//         (*fake_gyro_ptr) = true_gyro;
+//         fake_gyro_ptr->x += 2;
+//         fake_gyro_ptr->z += 2;
+//         return (*fake_gyro_ptr);
+// }
 
 
 

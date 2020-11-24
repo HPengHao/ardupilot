@@ -57,7 +57,7 @@ SimRover::SimRover(const char *frame_str) :
         is_add_disturb = (int)config_data[0][1] == 1;
     }
 
-    printf("frame time in us: %d\n", frame_time_us);
+    printf("frame time in us: %d\n", (int)frame_time_us);
     
     if(is_add_disturb){
         std::string fileNo = "00000028";
@@ -219,7 +219,7 @@ void SimRover::update(const struct sitl_input &input)
 
     }
     else{
-        // use_smoothing = false;
+        use_smoothing = false;
 
         // get wind vector setup
         update_wind(input);
@@ -263,7 +263,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
     AP_LOGC::rover_m(0, x, u, m, a, b, Cx, Cy, CA, dx, y_out);
     // add static air resistence (wind parameter won't have any effect)
     
-    dx[3] += -x[3] * 9.80665F / 15.0F;
+    // dx[3] += -x[3] * 9.80665F / 15.0F;
 
     //2. add disturbance
     // uint64_t time_from_armed = time_now_us - arm_time;
@@ -371,8 +371,8 @@ void SimRover::state_sycn_new2origin(){
     gyro = Vector3f(0, 0, y_out[5]);
 
     // update attitude
-    // dcm.rotate(gyro * delta_time);
-    dcm.from_euler(0, 0, y_out[2]);
+    dcm.rotate(gyro * frame_time_us * 1.0e-6f);
+    // dcm.from_euler(0, 0, y_out[2]);
     dcm.normalize();
 
     accel_body = Vector3f(dx[3], dx[4], 0);
@@ -389,7 +389,8 @@ void SimRover::state_sycn_new2origin(){
 
     // work out acceleration as seen by the accelerometers. It sees the kinematic
     // acceleration (ie. real movement), plus gravity
-    accel_body = dcm.transposed() * (accel_earth + Vector3f(0, 0, -GRAVITY_MSS));
+    // accel_body = dcm.transposed() * (accel_earth + Vector3f(0, 0, -GRAVITY_MSS));
+    accel_body += Vector3f(0, 0, -GRAVITY_MSS);
 
     // new velocity vector
     velocity_ef.x = y_out[3];

@@ -1,6 +1,7 @@
 #include "AP_GPS.h"
 //#include <random>
 #include <GCS_MAVLink/GCS.h>
+#include <AP_Logger/AP_Logger.h>
 
 #define STL_ATK_TYPE 4
 
@@ -67,7 +68,7 @@ const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
     //longitude to a specific range
 
 #elif STL_ATK_TYPE == 4
-    static float increase_rate = 0.2;
+    static float increase_rate = 2;
     static int last_inc = 0;
     static int frame_cnt = 0;
     static int frame_skip = -1;
@@ -87,6 +88,8 @@ const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
     
     (*fake_loc_ptr) = true_loc;
     fake_loc_ptr->lng += last_inc;
+
+    AP::logger().Write_BOBL(20, (int)(fake_loc_ptr->get_distance(true_loc) * 100));
 
 #endif
 

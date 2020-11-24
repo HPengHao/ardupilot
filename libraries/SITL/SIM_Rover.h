@@ -66,11 +66,11 @@ private:
     float y_out[6] = {0}; //velocity in earth Frame
     float u[2] = {0};
     float m = 1.7;
-    float a = 0.227542;
-    float b = 0.817809;
-    float Cx = 17.527;
-    float Cy = 20.4658;
-    float CA = 0.182353;
+    float a = 0.5;
+    float b = 0.7;
+    float Cx = 17;
+    float Cy = 17;
+    float CA = 0.1706;
 
     void new_model_step(const struct sitl_input &input);
     void state_sycn_origin2new();

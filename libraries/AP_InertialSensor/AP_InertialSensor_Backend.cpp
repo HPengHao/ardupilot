@@ -159,7 +159,8 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     if(LAUNCH_INTER_SAMPLE_ATTACK){
         //gcs().send_text(MAV_SEVERITY_INFO, "Low layer attack launched");
         (*_imu.fake_gyro_ptr) = gyro;
-        _imu.fake_gyro_ptr->x = 5;
+        float attack_value = _imu.inter_smp_atk_scale;
+        _imu.fake_gyro_ptr->x = attack_value;
         gyro = (*_imu.fake_gyro_ptr);
     }
     //============================================================

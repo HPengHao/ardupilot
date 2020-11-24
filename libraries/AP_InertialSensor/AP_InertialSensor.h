@@ -196,7 +196,9 @@ public:
 
     // Bob customized parameters, 1: launch attack 0: no attack
     AP_Int8 stealthy_atk_param;
+    AP_Float gps_atk_rate;
     AP_Int8 inter_smp_atk_param;
+    AP_Float inter_smp_atk_scale;
 
     // set overall board orientation
     void set_board_orientation(enum Rotation orientation, Matrix3f* custom_rotation = nullptr) {

@@ -470,6 +470,21 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @User: Advanced
     // @Values: 1: Enabled, 0: Disabled
     AP_GROUPINFO("INTSMP_ATK",  43, AP_InertialSensor, inter_smp_atk_param, 0),
+
+    // @Param: INT_ATK_P
+    // @DisplayName: Inter-sample stealthy attack scale
+    // @Description: Inter-sample attack gyroscope fix value
+    // @User: Advanced
+    // @Values: gyroscope fix value
+    AP_GROUPINFO("INT_ATK_P",  44, AP_InertialSensor, inter_smp_atk_scale, 5.0f),
+
+    // @Param: STL_ATK_P
+    // @DisplayName: GPS stealthy attack scale
+    // @Description: GPS attack drafting rate, 1 --> 0.25m/s
+    // @User: Advanced
+    // @Values: gyroscope fix value
+    AP_GROUPINFO("STL_ATK_P",  45, AP_InertialSensor, gps_atk_rate, 1.0f),
+
     /*
       NOTE: parameter indexes have gaps above. When adding new
       parameters check for conflicts carefully

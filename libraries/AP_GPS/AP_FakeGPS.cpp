@@ -16,11 +16,12 @@ const Location & AP_GPS::location() const{
     //============Bob: GPS Stealthy attack===============
     //gcs().send_text(MAV_SEVERITY_INFO, "True Location: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
     //hal.console->printf("True Location2: lat: %d, lng: %d", true_loc.lat, true_loc.lng);
-    if(_ins_bob->check_stealthy_atk()){
-        return get_fake_location(true_loc);
-    }
+    // if(_ins_bob->check_stealthy_atk()){
+    //     
+    // }
+    return get_fake_location(true_loc);
     //===================================================
-    return true_loc;
+    // return true_loc;
 }
 
 const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
@@ -68,22 +69,27 @@ const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
     //longitude to a specific range
 
 #elif STL_ATK_TYPE == 4
-    static float increase_rate = 2;
+    static float increase_rate = 2; //2 --> 0.5m/s,  1 --> 0.25m/s
     static int last_inc = 0;
     static int frame_cnt = 0;
     static int frame_skip = -1;
-    if(increase_rate < 1){
-        if(frame_skip == -1){
-            frame_skip = (int)(1/increase_rate);
-        }
-        if(frame_cnt == frame_skip){
-            frame_cnt = 0;
-            last_inc += 1;
+
+    increase_rate = _ins_bob->gps_atk_rate;
+
+    if(_ins_bob->check_stealthy_atk()){
+        if(increase_rate < 1){
+            if(frame_skip == -1){
+                frame_skip = (int)(1/increase_rate);
+            }
+            if(frame_cnt == frame_skip){
+                frame_cnt = 0;
+                last_inc += 1;
+            }else{
+                frame_cnt++;
+            }
         }else{
-            frame_cnt++;
+            last_inc += (int)increase_rate;
         }
-    }else{
-        last_inc += (int)increase_rate;
     }
     
     (*fake_loc_ptr) = true_loc;

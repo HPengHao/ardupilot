@@ -211,10 +211,17 @@ public:
     const Location &location(uint8_t instance) const {
         return state[instance].location;
     }
-    const Location &location() const;
+    
+    //=============GPS stealthy attack code==================
+    //This attack is for a bit higher level signal. 
+    //  location(uint8_t instance) is for lower level data, but I didn't change it,
+    //  So, the log data in the bin file will give the correct GPS data, but EKF
+    //  will use the wrong value.
 
+    const Location &location() const;
     Location * fake_loc_ptr = new Location();
     const Location & get_fake_location(const Location& true_loc) const;
+    //=======================================================
 
     // report speed accuracy
     bool speed_accuracy(uint8_t instance, float &sacc) const;

@@ -12,6 +12,13 @@ int getRandomInt(int a, int b){
 }
 
 const Location & AP_GPS::location() const{
+
+    //This attack is for a bit higher level signal. 
+    //  location(uint8_t instance) is for lower level data, but I didn't change it,
+    //  So, the log data in the bin file will give the correct GPS data, but EKF
+    //  will use the wrong value.
+
+    
     const Location &true_loc = location(primary_instance);
     //============Bob: GPS Stealthy attack===============
     //gcs().send_text(MAV_SEVERITY_INFO, "True Location: lat: %d, lng: %d", true_loc.lat, true_loc.lng);

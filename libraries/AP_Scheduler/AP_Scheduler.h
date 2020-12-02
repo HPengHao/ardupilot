@@ -102,6 +102,10 @@ public:
     // current running task, or -1 if none. Used to debug stuck tasks
     static int8_t current_task;
 
+    // number of 'ticks' that have passed (number of times that
+    // tick() has been called
+    uint16_t _tick_counter;
+
 private:
     // used to enable scheduler debugging
     AP_Int8 _debug;
@@ -115,9 +119,7 @@ private:
     // number of tasks in _tasks list
     uint8_t _num_tasks;
 
-    // number of 'ticks' that have passed (number of times that
-    // tick() has been called
-    uint16_t _tick_counter;
+    
 
     // tick counter at the time we last ran each task
     uint16_t *_last_run;

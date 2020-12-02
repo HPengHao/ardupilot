@@ -655,6 +655,21 @@ void DataFlash_Class::Log_Write_POS(AP_AHRS &ahrs)
     WriteBlock(&pkt, sizeof(pkt));
 }
 
+#define BOBL_LOG_ENABLE 1
+
+void DataFlash_Class::Write_BOBL(int code, int data){
+#if BOBL_LOG_ENABLE
+    const struct log_BOBL pkt = {
+        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_BOBL_MSG)),
+        time_us : AP_HAL::micros64(),
+        dataA   : code,
+        dataB   : data,
+        note    : "LOV"
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+#endif
+}
+
 #if AP_AHRS_NAVEKF_AVAILABLE
 void DataFlash_Class::Log_Write_EKF(AP_AHRS_NavEKF &ahrs)
 {

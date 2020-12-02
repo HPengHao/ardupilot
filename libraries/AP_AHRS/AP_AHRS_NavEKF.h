@@ -28,6 +28,8 @@
 #include <SITL/SITL.h>
 #endif
 
+// #define HAL_CPU_CLASS HAL_CPU_CLASS_1000
+
 #if HAL_CPU_CLASS >= HAL_CPU_CLASS_150
 #include <AP_NavEKF2/AP_NavEKF2.h>
 #include <AP_NavEKF3/AP_NavEKF3.h>
@@ -253,6 +255,8 @@ public:
 
     // get the index of the current primary gyro sensor
     uint8_t get_primary_gyro_index(void) const override;
+
+    void Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us, DataFlash_Class& DataFlash) const;
 
 private:
     enum EKF_TYPE {EKF_TYPE_NONE=0,

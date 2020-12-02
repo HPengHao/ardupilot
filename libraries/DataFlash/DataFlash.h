@@ -162,6 +162,7 @@ public:
     void Log_Write(const char *name, const char *labels, const char *fmt, ...);
     void Log_Write(const char *name, const char *labels, const char *units, const char *mults, const char *fmt, ...);
     void Log_WriteV(const char *name, const char *labels, const char *units, const char *mults, const char *fmt, va_list arg_list);
+    void Write_BOBL(int code, int data);
 
     // This structure provides information on the internal member data of a PID for logging purposes
     struct PID_Info {

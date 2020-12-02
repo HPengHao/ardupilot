@@ -1033,6 +1033,46 @@ struct PACKED log_DSTL {
     float D;
 };
 
+//================bob added===============
+struct PACKED log_Bob_EKF1 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll;
+    float pitch;
+    float yaw;
+    float velN;
+    float velE;
+    float velD;
+    float posD_dot;
+    float posN;
+    float posE;
+    float posD;
+    float gyrX;
+    float gyrY;
+    float gyrZ;
+    int32_t originHgt;
+};
+
+struct PACKED log_motors
+{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  uint16_t motor1;
+  uint16_t motor2;
+  uint16_t motor3;
+  uint16_t motor4;
+};
+
+struct PACKED log_BOBL{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  int32_t dataA;
+  int32_t dataB;
+  char note[4];
+};
+
+//==========================================
+
 // #endif // SBP_HW_LOGGING
 
 // FMT messages define all message formats other than FMT
@@ -1369,6 +1409,12 @@ Format characters in the format string for binary log messages
       "RATE", "Qffffffffffff",  "TimeUS,RDes,R,ROut,PDes,P,POut,YDes,Y,YOut,ADes,A,AOut", "skk-kk-kk-oo-", "F?????????BB-" }, \
     { LOG_RALLY_MSG, sizeof(log_Rally), \
             "RALY", "QBBLLh", "TimeUS,Tot,Seq,Lat,Lng,Alt", "s--DUm", "F--GGB" },  \
+    { LOG_BOB_EKF_MSG, sizeof(log_Bob_EKF1), \
+      "BKF1","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
+    { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
+      "BMTR", "QHHHH", "TimeUS,M1,M2,M3,M4", "s----", "F0000"},\
+    { LOG_BOBL_MSG, sizeof(log_BOBL), \
+      "BOBL", "Qiin", "TimeUS,DataA,DataB,Note", "s---", "F??-"}, \
     { LOG_VISUALODOM_MSG, sizeof(log_VisualOdom), \
             "VISO", "Qffffffff", "TimeUS,dt,AngDX,AngDY,AngDZ,PosDX,PosDY,PosDZ,conf", "ssrrrmmm-", "FF000000-" }
 
@@ -1390,6 +1436,13 @@ Format characters in the format string for binary log messages
 
 // message types for common messages
 enum LogMessages {
+
+  //Bob: customized log=====
+    LOG_BOBL_MSG = 120,
+    LOG_BOB_EKF_MSG,
+    LOG_BOB_MOTOR_MSG,
+  //=======================
+
     LOG_FORMAT_MSG = 128,
     LOG_PARAMETER_MSG,
     LOG_GPS_MSG,

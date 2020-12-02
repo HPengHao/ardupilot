@@ -433,6 +433,20 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Path: ../AP_InertialSensor/BatchSampler.cpp
     AP_SUBGROUPINFO(batchsampler, "LOG_",  39, AP_InertialSensor, AP_InertialSensor::BatchSampler),
 
+    // @Param: STLTHY_ATK
+    // @DisplayName: Stealthy attack enable
+    // @Description: To see whether the stealthy attack is enabled
+    // @User: Advanced
+    // @Values: 1: Enabled, 0: Disabled
+    AP_GROUPINFO("STLTHY_ATK",  40, AP_InertialSensor, stealthy_atk_param, 0),
+
+    // @Param: STL_ATK_P
+    // @DisplayName: GPS stealthy attack scale
+    // @Description: GPS attack drafting rate, 1 --> 0.25m/s
+    // @User: Advanced
+    // @Values: gyroscope fix value
+    AP_GROUPINFO("STL_ATK_P",  41, AP_InertialSensor, gps_atk_rate, 1.0f),
+
     /*
       NOTE: parameter indexes have gaps above. When adding new
       parameters check for conflicts carefully

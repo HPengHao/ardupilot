@@ -300,6 +300,8 @@ void AP_GPS::init(const AP_SerialManager& serial_manager)
             _rate_ms[i] = GPS_MAX_RATE_MS;
         }
     }
+
+    _ins_bob = AP_InertialSensor::get_instance();
 }
 
 // return number of active GPS sensors. Note that if the first GPS

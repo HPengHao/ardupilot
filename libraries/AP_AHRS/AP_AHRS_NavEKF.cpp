@@ -1632,7 +1632,7 @@ uint8_t AP_AHRS_NavEKF::get_primary_gyro_index(void) const
     return _ins.get_primary_gyro();
 }
 
-void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us, DataFlash_Class& DataFlash) const
+void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
 {
     // Write first EKF packet
     Vector3f euler;
@@ -1706,9 +1706,9 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us, DataF
     //     // AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
     // }
 
-    DataFlash.WriteCriticalBlock(&pkt, sizeof(pkt));
+    DataFlash_Class::instance()->WriteCriticalBlock(&pkt, sizeof(pkt));
     //we need to log motors data anyway.
-    DataFlash.WriteCriticalBlock(&pkt2, sizeof(pkt2));
+    DataFlash_Class::instance()->WriteCriticalBlock(&pkt2, sizeof(pkt2));
 }
 
 #endif // AP_AHRS_NAVEKF_AVAILABLE

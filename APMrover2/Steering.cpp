@@ -48,7 +48,7 @@ void Rover::set_servos(void)
             delay_satrt = false;
             const uint64_t start_evaluation = AP_HAL::micros64();
             //Bob: log ekf data, -1 means the primary core;
-            ahrs.Log_Write_BKF1_rover(-1, AP_HAL::micros64(), DataFlash);
+            ahrs.Log_Write_BKF1_rover(-1, AP_HAL::micros64());
             const uint64_t end_evaluation = AP_HAL::micros64();
             if(scheduler._tick_counter % 50 == 0){
                 DataFlash.Write_BOBL(19, (int)(end_evaluation-start_evaluation));

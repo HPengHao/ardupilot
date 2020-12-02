@@ -256,7 +256,7 @@ public:
     // get the index of the current primary gyro sensor
     uint8_t get_primary_gyro_index(void) const override;
 
-    void Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us, DataFlash_Class& DataFlash) const;
+    void Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const;
 
 private:
     enum EKF_TYPE {EKF_TYPE_NONE=0,

@@ -22,6 +22,9 @@
 #include "SIM_Motor.h"
 #include "SIM_Frame.h"
 #include "fileOperation.h"
+#define RERUN_SIMQUAD 0
+#define RERUN_SOLO 1
+#define RERUN_SIM_FRAME RERUN_SOLO 
 
 namespace SITL {
 
@@ -64,6 +67,9 @@ private:
     float dx_NED[12] = {0};
     float y_out[12] = {0};
     float u[4] = {0};
+
+#if RERUN_SIM_FRAME == RERUN_SIMQUAD
+    =========SimQuad Parameters===========
     float a = 0.128364;
     float b = 0.128364;
     float c = 0.128364;
@@ -74,7 +80,19 @@ private:
     float I_z = 0.015;
     float K_T = 7.21077; 
     float K_Q = 0.10472; 
-
+#elif RERUN_SIM_FRAME == RERUN_SOLO
+    //===========Solo Parameters============
+    float a = 0.15;
+    float b = 0.15;
+    float c = 0.15;
+    float d = 0.15;
+    float m = 1.5;
+    float I_x = 0.037;
+    float I_y = 0.038;
+    float I_z = 0.04;
+    float K_T = 8.35; 
+    float K_Q = 0.3187; 
+#endif
     void new_model_step(const struct sitl_input &input);
     void state_sycn_origin2new();
     void state_sycn_new2origin();

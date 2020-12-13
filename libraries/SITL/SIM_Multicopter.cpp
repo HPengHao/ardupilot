@@ -59,7 +59,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     
     if(is_add_disturb){
-        std::string fileNo = "00000284";
+        std::string fileNo ="190"; // "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -213,13 +213,14 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
 
     //1. calculate dx
     AP_LOGC::quadrotor_m(0.0, x, u, a, b, c, d, m, I_x, I_y, I_z, K_T, K_Q, dx, y_out);
+#if RERUN_SIM_FRAME == RERUN_SIMQUAD
     // add static air resistence (wind parameter won't have any effect)
     for (int i = 0; i < 3; i++)
     {
         dx[6 + i] += -x[6 + i] * (GRAVITY_MSS/frame->terminal_velocity);
         dx[9 + i] += -x[9 + i] * radians(400.0) / frame->terminal_rotation_rate;
     }
-    
+#endif    
     //2. add disturbance
     uint64_t time_from_armed = time_now_us - arm_time;
 
@@ -279,8 +280,10 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
         {
             x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
         }
+
+        float sync_interval = 1; //Unit: s, min: 0.1s
         
-        idx += 1; // sync every 1s
+        idx += (int)(sync_interval * 10); // sync every 1s
     }
 #endif
     //5. sycn with origin model variables

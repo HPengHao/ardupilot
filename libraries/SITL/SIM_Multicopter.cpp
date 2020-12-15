@@ -59,7 +59,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     
     if(is_add_disturb){
-        std::string fileNo ="190"; // "00000284";
+        std::string fileNo ="157"; // "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -276,10 +276,15 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
         float x_ENU[12] = {0};
         AP_LOGC::transfromNED2ENU(x_NED, x_ENU);
 
-        for (size_t i = 0; i < 6; i++)
+        for (size_t i = 0; i < 3; i++)
         {
             x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
         }
+
+        // for (size_t i = 9; i < 12; i++)
+        // {
+        //     x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
+        // }
 
         float sync_interval = 1; //Unit: s, min: 0.1s
         

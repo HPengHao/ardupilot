@@ -2,8 +2,19 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
+
+
+string getTimeStr(){
+    time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+
+    string s(30, '\0');
+    strftime(&s[0], s.size(), "%Y-%m-%d-%H-%M-%S", localtime(&now));
+    return s;
+}
 
 void readCSV(string filename, vector<vector<double>>& outcome){
     // File pointer 
@@ -59,4 +70,17 @@ void readCSV(string filename, vector<vector<double>>& outcome){
         }
     }
     fin.close();
+}
+
+void writeCSV(std::fstream& outstream, uint64_t time_us, float* data, int size){
+    string sp = ",";
+    outstream << time_us << sp;
+    for(int i = 0; i < size; i++){
+        outstream << data[i] << sp;
+    }
+    outstream << endl;
+}
+
+void writeInfo(std::fstream& outstream, uint64_t time_us, std::string info){
+    outstream << time_us << " -- " << info << endl; 
 }

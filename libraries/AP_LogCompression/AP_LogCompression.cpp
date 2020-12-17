@@ -1,7 +1,7 @@
 #include "AP_LogCompression.h"
 #include <AP_Logger/AP_Logger.h>
 
-void AP_LOGC::rover_m(float, const float x[6], const float i[2], float m, float a, float
+void AP_LOGC::rover_m(float, const float x[6], const float i[3], float m, float a, float
              b, float Cx, float Cy, float CA, float dx[6], float y[6])
 {
   float c;
@@ -27,15 +27,14 @@ void AP_LOGC::rover_m(float, const float x[6], const float i[2], float m, float 
   dx[1] = x[3] * sinf(x[2]) + x[4] * cosf(x[2]);
   dx[2] = x[5];
   dx[3] = (x[4] * x[5] + 1.0F / m * (((Cx * (i[1] + i[1]) * cosf(i[0]) -
-            2.0F * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * sinf(i[0])) +
-            Cx * 0.0F) - CA * (x[3] * x[3])));
+            2.0F * Cy * (i[0] - atanf((x[4] + a * x[5]) / x[3])) * sinf(i[0])) +
+            Cx * (i[2] + i[2])) - CA * (x[3] * x[3])));
   dx[4] = -x[3] * x[5] + 1.0F / m * ((Cx * (i[1] + i[1]) * sinf(i[0]) + 2.0F
-    * Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * cosf(i[0])) + 2.0F * Cy * (b *
-    x[5] - x[4]) / x[3]);
+    * Cy * (i[0] - atanf((x[4] + a * x[5]) / x[3])) * cosf(i[0])) + 2.0F * Cy * atanf((b * x[5] - x[4]) / x[3]));
   c = (a + b) / 2.0F;
   dx[5] = 1.0F / (c * c * m) * (a * (Cx * (i[1] + i[1]) * sinf(i[0]) + 2.0F *
-    Cy * (i[0] - (x[4] + a * x[5]) / x[3]) * cosf(i[0])) - 2.0F * b * Cy *
-    (b * x[5] - x[4]) / x[3]);
+    Cy * (i[0] - atanf((x[4] + a * x[5]) / x[3])) * cosf(i[0])) - 2.0F * b * Cy *
+    atanf((b * x[5] - x[4]) / x[3]));
 
   
   //  air resistance

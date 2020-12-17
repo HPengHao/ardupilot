@@ -22,7 +22,8 @@
 #include <stdio.h>
 #include "fileOperation.h"
 #include <AP_LogCompression/AP_LogCompression.h>
-#define USE_SCYN_SIM 0
+#include <sys/stat.h>
+#define USE_SCYN_SIM 1
 
 namespace SITL {
 
@@ -60,7 +61,7 @@ SimRover::SimRover(const char *frame_str) :
     printf("frame time in us: %d\n", (int)frame_time_us);
     
     if(is_add_disturb){
-        std::string fileNo = "00000028";
+        std::string fileNo = "00000088";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -81,6 +82,13 @@ SimRover::SimRover(const char *frame_str) :
     }
 
     
+    // std::string curr_time_str = getTimeStr();
+    std::string log_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/log/";
+    // mkdir(log_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    // std::string filename_data = log_folder + "/data.csv";
+    // printf("%s\n", filename_data.c_str());
+    data_output.open(log_folder + "data.csv",std::fstream::out);
+    info_output.open(log_folder + "info.txt", std::fstream::out);
 }
 
 
@@ -144,6 +152,7 @@ void SimRover::update(const struct sitl_input &input)
             float motor2 = 2*((input.servos[2]-1000)/1000.0f - 0.5f);
             steering = motor1 - motor2;
             throttle = 0.5*(motor1 + motor2);
+            printf("skid steering mode!!");
         } else {
             steering = 2*((input.servos[0]-1000)/1000.0f - 0.5f);
             throttle = 2*((input.servos[2]-1000)/1000.0f - 0.5f);
@@ -219,7 +228,7 @@ void SimRover::update(const struct sitl_input &input)
 
     }
     else{
-        use_smoothing = false;
+        use_smoothing = true;
 
         // get wind vector setup
         update_wind(input);
@@ -254,19 +263,27 @@ void SimRover::new_model_step(const struct sitl_input &input){
 
     //prepare input
     u[0] = steering;
-    u[1] = throttle;
+    u[1] = 0;//front wheel
+    u[2] = throttle; //rear wheel
 
     // how much time has passed?
     float dt = frame_time_us * 1.0e-6f;
 
     //1. calculate dx
+    if(std::abs(x[3]) < 0.1){
+        printf("======warning: longtitorial speed too slow\n");
+        x[3] = x[3] > 0 ? 0.1f : -0.1f;
+    }
     AP_LOGC::rover_m(0, x, u, m, a, b, Cx, Cy, CA, dx, y_out);
+
     // add static air resistence (wind parameter won't have any effect)
+    dx[3] += -x[3] * 9.80665F / 15.0F;
+
+
     
-    // dx[3] += -x[3] * 9.80665F / 15.0F;
 
     //2. add disturbance
-    // uint64_t time_from_armed = time_now_us - arm_time;
+    uint64_t time_from_armed = time_now_us - arm_time;
 
     // static uint idxs_dis[2] = {0};
     // for (int i = 0; i < 2; i++)
@@ -291,19 +308,22 @@ void SimRover::new_model_step(const struct sitl_input &input){
     //     }
     // }
 
-    if(abs(dx[3]) > 100){
+    if(abs(dx[3]) > 10){
         printf("!!!warning: foward acceleration too fast\n");
-        // dx[3] = dx[3] > 0 ? 30 : -30;
+        writeInfo(info_output, time_now_us, "!!!warning: foward acceleration too fast");
+        // dx[3] = dx[3] > 0 ? 4 : -4;
     }
 
-    if(abs(dx[4]) > 100){
-        printf("!!!warning: size acceleration too fast\n");
-        // dx[4] = dx[4] > 0 ? 30 : -30;
+    if(abs(dx[4]) > 10){
+        printf("!!!warning: side acceleration too fast\n");
+        writeInfo(info_output, time_now_us,  "!!!warning: side acceleration too fast");
+        // dx[4] = dx[4] > 0 ? 1.5 : -1.5;
     }
 
-    if(abs(dx[5]) > 20){
+    if(abs(dx[5]) > 10){
         printf("!!!warning: yaw acceleration too fast\n");
-        // dx[5] = dx[5] > 0 ? 5 : -5;
+        writeInfo(info_output, time_now_us,  "!!!warning: yaw acceleration too fast");
+        // dx[5] = dx[5] > 0 ? 4 : -4;
     }
 
     //3. update old states.
@@ -313,20 +333,25 @@ void SimRover::new_model_step(const struct sitl_input &input){
     }
     x[2] = wrap_2PI(x[2]);
 
+    //anormly checks
     if(abs(x[3]) > 30){
         printf("warning: foward speed too fast\n");
+        writeInfo(info_output, time_now_us,  "warning: foward speed too fast");
         x[3] = x[3] > 0 ? 30 : -30;
     }
 
     if(abs(x[4]) > 30){
         printf("warning: side speed too fast\n");
+        writeInfo(info_output, time_now_us,  "warning: side speed too fast");
         x[4] = x[4] > 0 ? 30 : -30;
     }
 
     if(abs(x[5]) > 5){
         printf("warning: yaw rate too fast\n");
+        writeInfo(info_output, time_now_us,  "warning: yaw rate too fast");
         x[5] = x[5] > 0 ? 5 : -5;
     }
+
 
     //4. test if we need synchronization. If so, synchronize.
 
@@ -351,7 +376,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
 
         for (size_t i = 0; i < 3; i++)
         {
-            x[i] = x_bf[i]; //only synchronize x,y,yaw value
+            x[i] = x_bf[i]; //only synchronize x,y value
         }
         
         idx += 1; // sync every 1s
@@ -360,6 +385,15 @@ void SimRover::new_model_step(const struct sitl_input &input){
 
     //5. update output values
     AP_LOGC::transfrombf2ef_rover(x, y_out);
+
+    float combined_data[20];
+    memcpy(combined_data, x, 6 * sizeof(float));
+    memcpy(&combined_data[6], dx, 6 * sizeof(float));
+    memcpy(&combined_data[12], y_out, 6 * sizeof(float));
+    combined_data[18] = steering/M_PI;
+    combined_data[19] = throttle;
+
+    writeCSV(data_output, time_now_us, combined_data, 20);
 
     //6. sycn with origin model variables
     state_sycn_new2origin();
@@ -371,21 +405,22 @@ void SimRover::state_sycn_new2origin(){
     gyro = Vector3f(0, 0, y_out[5]);
 
     // update attitude
-    dcm.rotate(gyro * frame_time_us * 1.0e-6f);
-    // dcm.from_euler(0, 0, y_out[2]);
+    // dcm.rotate(gyro * frame_time_us * 1.0e-6f);
+    dcm.from_euler(0, 0, y_out[2]);
     dcm.normalize();
 
     accel_body = Vector3f(dx[3], dx[4], 0);
+    ang_accel = Vector3f(0, 0, dx[5]);
 
     // now in earth frame
     // Vector3f accel_earth = dcm * accel_body;
-    float dx_ef[6] = {0};
-    AP_LOGC::transfrombf2ef_rover(dx, dx_ef);
-    Vector3f accel_earth = Vector3f(dx_ef[3], dx_ef[4], 0);
-    accel_earth += Vector3f(0, 0, GRAVITY_MSS);
+    // float dx_ef[6] = {0};
+    // AP_LOGC::transfrombf2ef_rover(dx, dx_ef);
+    // Vector3f accel_earth = Vector3f(dx_ef[3], dx_ef[4], 0);
+    // accel_earth += Vector3f(0, 0, GRAVITY_MSS);
 
-    // we are on the ground, so our vertical accel is zero
-    accel_earth.z = 0;
+    // // we are on the ground, so our vertical accel is zero
+    // accel_earth.z = 0;
 
     // work out acceleration as seen by the accelerometers. It sees the kinematic
     // acceleration (ie. real movement), plus gravity

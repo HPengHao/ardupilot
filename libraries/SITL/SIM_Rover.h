@@ -64,7 +64,7 @@ private:
     float x[6] = {0}; //velocity in body Frame, position in NED frame
     float dx[6] = {0};
     float y_out[6] = {0}; //velocity in earth Frame
-    float u[2] = {0};
+    float u[3] = {0};
     float m = 1.7;
     float a = 0.5;
     float b = 0.7;
@@ -75,6 +75,8 @@ private:
     void new_model_step(const struct sitl_input &input);
     void state_sycn_origin2new();
     void state_sycn_new2origin();
+    std::fstream data_output;
+    std::fstream info_output;
 };
 
 } // namespace SITL

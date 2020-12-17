@@ -376,10 +376,12 @@ void SimRover::new_model_step(const struct sitl_input &input){
 
         for (size_t i = 0; i < 3; i++)
         {
-            x[i] = x_bf[i]; //only synchronize x,y value
+            x[i] = x_bf[i]; //only synchronize x,y, yaw value
         }
         
-        idx += 1; // sync every 1s
+        float sync_interval = 1; //Unit: s, min: 0.1s
+        
+        idx += (int)(sync_interval * 10); // sync every 1s
     }
 #endif
 

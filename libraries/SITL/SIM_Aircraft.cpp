@@ -612,7 +612,7 @@ void Aircraft::smooth_sensors(void)
     }
 
     // calculate required accel to get us to desired position and velocity in the time_constant
-    const float time_constant = 0.1f;
+    const float time_constant = 0.1f;//0.1f;
     Vector3f dvel = (velocity_ef - smoothing.velocity_ef) + (delta_pos / time_constant);
     Vector3f accel_e = dvel / time_constant + (dcm * accel_body + Vector3f(0.0f, 0.0f, GRAVITY_MSS));
     const float accel_limit = 14 * GRAVITY_MSS;

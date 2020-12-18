@@ -285,28 +285,31 @@ void SimRover::new_model_step(const struct sitl_input &input){
     //2. add disturbance
     uint64_t time_from_armed = time_now_us - arm_time;
 
-    // static uint idxs_dis[2] = {0};
-    // for (int i = 0; i < 2; i++)
-    // {
-    //     if(idxs_dis[i] < disturb_data_arr[i].size() && time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
-    //         while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
-    //             idxs_dis[i]++;
-    //             if(idxs_dis[i] >= disturb_data_arr[i].size()){
-    //                 break;
-    //             }
-    //         }
-    //         if(idxs_dis[i] < disturb_data_arr[i].size()){
-    //             idxs_dis[i]--;
-    //             if(i == 0){
-    //                 dx[3] +=   disturb_data_arr[i][idxs_dis[i]][0]; // acc_x
-    //                 dx[4] +=   disturb_data_arr[i][idxs_dis[i]][1]; // acc_y
-    //             }else{
-    //                 dx[5] +=   disturb_data_arr[i][idxs_dis[i]][0]; // yaw_rate
-    //             }
+    static uint idxs_dis[2] = {0};
+    for (int i = 0; i < 2; i++)
+    {
+        if(time_from_armed > 3 * 1e6 && 
+                idxs_dis[i] < disturb_data_arr[i].size() && 
+                    time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
+            while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
+                idxs_dis[i]++;
+                if(idxs_dis[i] >= disturb_data_arr[i].size()){
+                    break;
+                }
+            }
+            if(idxs_dis[i] < disturb_data_arr[i].size()){
+                idxs_dis[i]--;
+                if(i == 0){
+                    // writeInfo(info_output, time_now_us, std::to_string(disturb_data_arr[i][idxs_dis[i]][0]));
+                    dx[3] +=  disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
+                    dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
+                }else{
+                    dx[5] +=   disturb_data_arr[i][idxs_dis[i]][1]; // yaw_rate
+                }
                 
-    //         }
-    //     }
-    // }
+            }
+        }
+    }
 
     if(abs(dx[3]) > 10){
         printf("!!!warning: foward acceleration too fast\n");
@@ -379,7 +382,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
             x[i] = x_bf[i]; //only synchronize x,y, yaw value
         }
         
-        float sync_interval = 1; //Unit: s, min: 0.1s
+        float sync_interval = 0.5; //Unit: s, min: 0.1s
         
         idx += (int)(sync_interval * 10); // sync every 1s
     }

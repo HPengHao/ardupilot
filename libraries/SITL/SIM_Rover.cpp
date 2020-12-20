@@ -61,9 +61,12 @@ SimRover::SimRover(const char *frame_str) :
     printf("frame time in us: %d\n", (int)frame_time_us);
     
     if(is_add_disturb){
-        std::string fileNo = "00000088";
+        std::string fileNo = "00000269";
+#if RERUN_SIM_FRAME == RERUN_SIMROVER        
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/";
-        
+#elif RERUN_SIM_FRAME == RERUN_ERLEROVER
+        std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/Erle/";
+#endif
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
         std::string rot_disturb_filePath = data_folder + fileNo + "_disturb_rot.csv";
         std::string syn_filePath = data_folder + fileNo + "_syn.csv";
@@ -138,7 +141,7 @@ float SimRover::calc_lat_accel(float steering_angle, float speed)
 void SimRover::update(const struct sitl_input &input)
 {
 
-    if(!armed && abs(input.servos[2] - 1500) >= 40){
+    if(!armed && abs(input.servos[2] - 1500) >= arm_ref){
         armed = true;
         arm_time = time_now_us;
     }
@@ -257,7 +260,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
     if (skid_steering) {
         printf("doesn't support skid steering\n");
     } else {
-        steering = M_PI * ((input.servos[0]-1000)/1000.0f - 0.5f);
+        steering = max_turn_ang * ((input.servos[0]-1000)/1000.0f - 0.5f);
         throttle = ((input.servos[2]-1000)/1000.0f - 0.5f);
     }
 
@@ -275,10 +278,10 @@ void SimRover::new_model_step(const struct sitl_input &input){
         x[3] = x[3] > 0 ? 0.1f : -0.1f;
     }
     AP_LOGC::rover_m(0, x, u, m, a, b, Cx, Cy, CA, dx, y_out);
-
+#if RERUN_SIM_FRAME == RERUN_SIMROVER
     // add static air resistence (wind parameter won't have any effect)
     dx[3] += -x[3] * 9.80665F / 15.0F;
-
+#endif
 
     
 
@@ -302,7 +305,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
                 if(i == 0){
                     // writeInfo(info_output, time_now_us, std::to_string(disturb_data_arr[i][idxs_dis[i]][0]));
                     dx[3] +=  disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
-                    dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
+                    // dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
                 }else{
                     dx[5] +=   disturb_data_arr[i][idxs_dis[i]][1]; // yaw_rate
                 }

@@ -20,6 +20,9 @@
 
 #include "SIM_Aircraft.h"
 #include "fileOperation.h"
+#define RERUN_SIMROVER 2
+#define RERUN_ERLEROVER 3
+#define RERUN_SIM_FRAME RERUN_ERLEROVER 
 
 namespace SITL {
 
@@ -65,12 +68,26 @@ private:
     float dx[6] = {0};
     float y_out[6] = {0}; //velocity in earth Frame
     float u[3] = {0};
+
+#if RERUN_SIM_FRAME == RERUN_SIMROVER
     float m = 1.7;
     float a = 0.5;
     float b = 0.7;
     float Cx = 17;
     float Cy = 17;
     float CA = 0.1706;
+    int arm_ref = 40;
+    float max_turn_ang = M_PI;
+#elif RERUN_SIM_FRAME == RERUN_ERLEROVER
+    float m = 1.7;
+    float a = 0.5;
+    float b = 0.7;
+    float Cx = 15;
+    float Cy = 15;
+    float CA = 0.1706;
+    int arm_ref = 20;
+    float max_turn_ang = M_PI_2;
+#endif
 
     void new_model_step(const struct sitl_input &input);
     void state_sycn_origin2new();

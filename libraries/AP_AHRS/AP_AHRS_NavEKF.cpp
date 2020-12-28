@@ -24,6 +24,8 @@
 #include <AP_Vehicle/AP_Vehicle.h>
 #include <GCS_MAVLink/GCS.h>
 #include <AP_Module/AP_Module.h>
+#include <AP_LogCompression/AP_LogCompression.h>
+
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 
@@ -1705,6 +1707,8 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
     // }else{
     //     // AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
     // }
+
+    AP_LOGC::compressionLog(pkt, pkt2);
 
     DataFlash_Class::instance()->WriteCriticalBlock(&pkt, sizeof(pkt));
     //we need to log motors data anyway.

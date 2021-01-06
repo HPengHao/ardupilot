@@ -59,7 +59,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     
     if(is_add_disturb){
-        std::string fileNo ="157"; // "00000284";
+        std::string fileNo ="163"; // "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";

@@ -123,7 +123,7 @@ public:
     bool Write_Unit(const struct UnitStructure *s);
     bool Write_Multiplier(const struct MultiplierStructure *s);
     bool Write_Format_Units(const struct LogStructure *structure);
-
+    uint32_t _all_requested = 0;
 
 protected:
 
@@ -147,6 +147,7 @@ protected:
     LoggerMessageWriter_DFLogStart *_startup_messagewriter;
     bool _writing_startup_messages;
 
+    
     uint32_t _dropped;
 
     // must be called when a new log is being started:

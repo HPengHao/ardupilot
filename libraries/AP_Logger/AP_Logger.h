@@ -323,6 +323,8 @@ public:
 
     // number of blocks that have been dropped
     uint32_t num_dropped(void) const;
+    uint32_t num_requested() const;
+
 
     // accesss to public parameters
     void set_force_log_disarmed(bool force_logging) { _force_log_disarmed = force_logging; }

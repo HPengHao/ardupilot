@@ -93,7 +93,7 @@ const AP_Param::GroupInfo AP_Logger::var_info[] = {
     // @Units: s
     AP_GROUPINFO("_FILE_TIMEOUT",  6, AP_Logger, _params.file_timeout,     HAL_LOGGING_FILE_TIMEOUT),
 
-    AP_GROUPINFO("_COMPRESS", 7, AP_Logger, _params.compress_log, 0),
+    AP_GROUPINFO("_COMPRESS", 7, AP_Logger, _params.compress_log, 1),
     
     AP_GROUPEND
 };
@@ -742,6 +742,14 @@ uint32_t AP_Logger::num_dropped() const
         return 0;
     }
     return backends[0]->num_dropped();
+}
+
+uint32_t AP_Logger::num_requested() const
+{
+    if (_next_backend == 0) {
+        return 0;
+    }
+    return backends[0]->_all_requested;
 }
 
 

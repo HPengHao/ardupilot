@@ -479,6 +479,8 @@ bool AP_Logger_File::StartNewLogOK() const
 /* Write a block of data at current offset */
 bool AP_Logger_File::_WritePrioritisedBlock(const void *pBuffer, uint16_t size, bool is_critical)
 {
+    _all_requested++;
+
     if (! WriteBlockCheckStartupMessages()) {
         _dropped++;
         return false;

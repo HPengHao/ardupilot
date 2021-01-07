@@ -532,7 +532,10 @@ void Copter::update_GPS(void)
         scheduler.inter_sample_atk = true;
     }
     //========================================================
-    
+
+    AP::logger().Write_BOBL(8, (int)AP::logger().num_requested()); // 8: requested log points
+    AP::logger().Write_BOBL(9, (int)AP::logger().num_dropped()); // 9: dropped log points
+
 }
 
 void Copter::init_simple_bearing()

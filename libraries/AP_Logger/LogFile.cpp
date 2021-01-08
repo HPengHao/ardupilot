@@ -154,7 +154,7 @@ void AP_Logger::Write_BOBL(int code, int data){
         dataB   : data,
         note    : "LOV"
     };
-    WriteBlock(&pkt, sizeof(pkt));
+    WriteCriticalBlock(&pkt, sizeof(pkt));
 #endif
 }
 

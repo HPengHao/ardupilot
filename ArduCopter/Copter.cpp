@@ -120,6 +120,11 @@ Copter::Copter(void) :
     // init sensor error logging flags
     sensor_health.baro = true;
     sensor_health.compass = true;
+
+    std::string log_folder = "/home/bob/ardupilot_3.4.0/ArduCopter/logs/Controllers_data/";
+    std::string curr_time_str = getTimeStr();
+    cont_data_out.open(log_folder + "cnt_ref_data_" + curr_time_str,std::fstream::out);
+    cont_data_out << "time_us,x,y,z,ref_x,ref_y,ref_z,vx,vy,vz,ref_vx,ref_vy,ref_vz,ax,ay,az,ref_ax,ref_ay,ref_az,r,p,y,ref_r,ref_p,ref_y,p,q,r,ref_p,ref_q,ref_r"<<std::endl;
 }
 
 Copter copter;

@@ -88,6 +88,8 @@
 #include <AC_InputManager/AC_InputManager.h>        // Pilot input handling library
 #include <AC_InputManager/AC_InputManager_Heli.h>   // Heli specific pilot input handling library
 #include <AP_Button/AP_Button.h>
+#include <DataFlash/fileOperation.h>
+
 
 // Configuration
 #include "defines.h"
@@ -143,6 +145,8 @@ public:
     // HAL::Callbacks implementation.
     void setup() override;
     void loop() override;
+
+    std::fstream cont_data_out;
 
 private:
     // key aircraft parameters passed to multiple libraries

@@ -79,6 +79,8 @@ public:
     // user settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
+    
+
 protected:
 
     // update_throttle_rpy_mix - updates thr_low_comp value towards the target

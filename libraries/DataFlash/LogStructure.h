@@ -713,6 +713,46 @@ struct PACKED log_Rally {
     int16_t altitude;
 };
 
+//================bob added===============
+struct PACKED log_Bob_EKF1 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll;
+    float pitch;
+    float yaw;
+    float velN;
+    float velE;
+    float velD;
+    float posD_dot;
+    float posN;
+    float posE;
+    float posD;
+    float gyrX;
+    float gyrY;
+    float gyrZ;
+    int32_t originHgt;
+};
+
+struct PACKED log_motors
+{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  uint16_t motor1;
+  uint16_t motor2;
+  uint16_t motor3;
+  uint16_t motor4;
+};
+
+struct PACKED log_BOBL{
+  LOG_PACKET_HEADER;
+  uint64_t time_us;
+  int32_t dataA;
+  int32_t dataB;
+  char note[4];
+};
+
+//==========================================
+
 // #endif // SBP_HW_LOGGING
 
 /*
@@ -788,6 +828,12 @@ Format characters in the format string for binary log messages
       "MODE", "QMBB",         "TimeUS,Mode,ModeNum,Rsn" }, \
     { LOG_RFND_MSG, sizeof(log_RFND), \
       "RFND", "QCC",         "TimeUS,Dist1,Dist2" }, \
+    { LOG_BOB_EKF_MSG, sizeof(log_Bob_EKF1), \
+      "BKF1","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH"}, \
+    { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
+      "BMTR", "QHHHH", "TimeUS,M1,M2,M3,M4"},\
+    { LOG_BOBL_MSG, sizeof(log_BOBL), \
+      "BOBL", "Qiin", "TimeUS,DataA,DataB,Note"}, \
     { LOG_DF_MAV_STATS, sizeof(log_DF_MAV_Stats), \
       "DMS", "IIIIIBBBBBBBBBB",         "TimeMS,N,Dp,RT,RS,Er,Fa,Fmn,Fmx,Pa,Pmn,Pmx,Sa,Smn,Smx" }
 
@@ -934,6 +980,11 @@ Format characters in the format string for binary log messages
 
 // message types for common messages
 enum LogMessages {
+  //Bob: customized log=====
+    LOG_BOBL_MSG = 120,
+    LOG_BOB_EKF_MSG,
+    LOG_BOB_MOTOR_MSG,
+  //=======================
     LOG_FORMAT_MSG = 128,
     LOG_PARAMETER_MSG,
     LOG_GPS_MSG,

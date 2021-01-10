@@ -2,6 +2,7 @@
 #include "AC_PosControl.h"
 #include <AP_Math/AP_Math.h>
 
+
 extern const AP_HAL::HAL& hal;
 
 const AP_Param::GroupInfo AC_PosControl::var_info[] = {
@@ -75,6 +76,11 @@ AC_PosControl::AC_PosControl(const AP_AHRS& ahrs, const AP_InertialNav& inav,
     _limit.vel_up = true;
     _limit.vel_down = true;
     _limit.accel_xy = true;
+
+    std::string log_folder = "/home/bob/ardupilot_3.4.0/ArduCopter/logs/";
+    std::string curr_time_str = getTimeStr();
+    data_output.open(log_folder + "psc_ref_data_" + curr_time_str,std::fstream::out);
+    data_output << "time_us,x,y,z,ref_x,ref_y,ref_z,vx,vy,vz,ref_vx,ref_vy,ref_vz"<<std::endl;
 }
 
 ///
@@ -670,6 +676,31 @@ void AC_PosControl::init_xy_controller(bool reset_I)
     init_ekf_xy_reset();
 }
 
+void AC_PosControl::get_pos_vel_acc_refs(float pos_vel_acc_data[18]) const {
+    Vector3f curr_pos = _inav.get_position();
+    Vector3f curr_vel = _inav.get_velocity();
+    Vector3f curr_accel =  _ahrs.get_accel_ef();
+    
+    pos_vel_acc_data[0] = curr_pos.x;
+    pos_vel_acc_data[1] = curr_pos.y;
+    pos_vel_acc_data[2] = curr_pos.z;
+    pos_vel_acc_data[3] = _pos_target.x;
+    pos_vel_acc_data[4] = _pos_target.y;
+    pos_vel_acc_data[5] = _pos_target.z;
+    pos_vel_acc_data[6] = curr_vel.x;
+    pos_vel_acc_data[7] = curr_vel.y;
+    pos_vel_acc_data[8] = curr_vel.z;
+    pos_vel_acc_data[9] = _vel_target.x;
+    pos_vel_acc_data[10] = _vel_target.y;
+    pos_vel_acc_data[11] = _vel_target.z;
+    pos_vel_acc_data[12] = curr_accel.x;
+    pos_vel_acc_data[13] = curr_accel.y;
+    pos_vel_acc_data[14] = curr_accel.z;
+    pos_vel_acc_data[15] = _accel_target.x;
+    pos_vel_acc_data[16] = _accel_target.y;
+    pos_vel_acc_data[17] = _accel_target.z;
+}
+
 /// update_xy_controller - run the horizontal position controller - should be called at 100hz or higher
 void AC_PosControl::update_xy_controller(xy_mode mode, float ekfNavVelGainScaler, bool use_althold_lean_angle)
 {
@@ -692,11 +723,32 @@ void AC_PosControl::update_xy_controller(xy_mode mode, float ekfNavVelGainScaler
     // translate any adjustments from pilot to loiter target
     desired_vel_to_pos(dt);
 
+    //================ log pos and reference =======================
+    Vector3f curr_pos = _inav.get_position();
+    float pos_data[6] = {curr_pos.x, curr_pos.y, curr_pos.z, _pos_target.x, _pos_target.y, _pos_target.z};
+    // DataFlash_Class.instance()->Log_Write()
+    //==============================================================
+
     // run position controller's position error to desired velocity step
     pos_to_rate_xy(mode, dt, ekfNavVelGainScaler);
 
+    //================ log vel and reference =======================
+    Vector3f curr_vel = _inav.get_velocity();
+    float vel_data[6] = {curr_vel.x, curr_vel.y, curr_vel.z, _vel_target.x, _vel_target.y, _vel_target.z};
+    //==============================================================
+
     // run position controller's velocity to acceleration step
     rate_to_accel_xy(dt, ekfNavVelGainScaler);
+
+    //================ log acc and reference =======================
+    // Vector3f curr_accel =  _ahrs.get_accel_ef();
+    // float acc_data[6] = {curr_accel.x, curr_accel.y, curr_accel.z, _accel_target.x, _accel_target.y, _accel_target.z};
+    // float log_data[18];
+    // memcpy(log_data, pos_data, 6 * sizeof(float));
+    // memcpy(&log_data[6], vel_data, 6 * sizeof(float));
+    // memcpy(&log_data[12], acc_data, 6 * sizeof(float));
+    // writeCSV(data_output, AP_HAL::micros64(), log_data, 18);
+    //==============================================================
 
     // run position controller's acceleration to lean angle step
     accel_to_lean_angles(dt, ekfNavVelGainScaler, use_althold_lean_angle);

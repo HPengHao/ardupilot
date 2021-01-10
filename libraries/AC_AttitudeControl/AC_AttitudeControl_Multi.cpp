@@ -224,6 +224,20 @@ void AC_AttitudeControl_Multi::rate_controller_run()
     // move throttle vs attitude mixing towards desired (called from here because this is conveniently called on every iteration)
     update_throttle_rpy_mix();
 
+    //=========== record angle target and actual angle =================
+    
+    // Vector3f curr_angle_rat =  _ahrs.get_gyro(); 
+    // float angle_rat_data[6] = {
+    //     curr_angle_rat.x, 
+    //     curr_angle_rat.y, 
+    //     curr_angle_rat.z, 
+    //     _rate_target_ang_vel.x, 
+    //     _rate_target_ang_vel.y, 
+    //     _rate_target_ang_vel.z
+    // };
+    // writeCSV(angle_rate_output, AP_HAL::micros64(), angle_rat_data, 6);
+    //==================================================================
+
     _motors.set_roll(rate_target_to_motor_roll(_rate_target_ang_vel.x));
     _motors.set_pitch(rate_target_to_motor_pitch(_rate_target_ang_vel.y));
     _motors.set_yaw(rate_target_to_motor_yaw(_rate_target_ang_vel.z));

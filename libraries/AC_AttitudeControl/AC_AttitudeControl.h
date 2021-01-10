@@ -11,6 +11,7 @@
 #include <AP_Motors/AP_Motors.h>
 #include <AC_PID/AC_PID.h>
 #include <AC_PID/AC_P.h>
+#include <DataFlash/fileOperation.h>
 
 #define AC_ATTITUDE_CONTROL_ANGLE_P                     4.5f             // default angle P gain for roll, pitch and yaw
 
@@ -60,7 +61,16 @@ public:
         _motors(motors)
         {
             AP_Param::setup_object_defaults(this, var_info);
+            std::string log_folder = "/home/bob/ardupilot_3.4.0/ArduCopter/logs/ATC_control/";
+            std::string curr_time_str = getTimeStr();
+            angles_output.open(log_folder + "atc_ang_data_" + curr_time_str,std::fstream::out);
+            angles_output << "time_us,r,p,y,r_ref,p_ref,y_ref"<<std::endl;
+            angle_rate_output.open(log_folder + "atc_rat_data_" + curr_time_str,std::fstream::out);
+            angle_rate_output << "time_us,p,q,r,p_ref,q_ref,r_ref"<<std::endl;
         }
+
+    std::fstream angles_output;
+    std::fstream angle_rate_output;
 
     // Empty destructor to suppress compiler warning
     virtual ~AC_AttitudeControl() {}
@@ -240,6 +250,12 @@ public:
 
     // User settable parameters
     static const struct AP_Param::GroupInfo var_info[];
+
+    //Bob: record angle controller data and reference
+    void get_ang_controller_log(float ang_and_ref[6]) const;
+
+    //Bob: record angle rate controller data
+    void get_ang_rat_controller_log(float rat_and_ref[6]) const;
 
 protected:
 

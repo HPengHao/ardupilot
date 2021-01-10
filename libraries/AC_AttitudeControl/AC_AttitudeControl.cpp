@@ -376,6 +376,23 @@ void AC_AttitudeControl::input_rate_bf_roll_pitch_yaw(float roll_rate_bf_cds, fl
     attitude_controller_run_quat();
 }
 
+void AC_AttitudeControl::get_ang_controller_log(float ang_and_ref[6]) const {
+    Quaternion attitude_vehicle_quat;
+    attitude_vehicle_quat.from_rotation_matrix(_ahrs.get_rotation_body_to_ned());
+    attitude_vehicle_quat.to_euler(ang_and_ref[0],ang_and_ref[1], ang_and_ref[2]);
+    _attitude_target_quat.to_euler(ang_and_ref[3],ang_and_ref[4], ang_and_ref[5]);
+}
+
+void AC_AttitudeControl::get_ang_rat_controller_log(float rat_and_ref[6]) const {
+    Vector3f curr_angle_rat =  _ahrs.get_gyro(); 
+    rat_and_ref[0] = curr_angle_rat.x;
+    rat_and_ref[1] = curr_angle_rat.y;
+    rat_and_ref[2] = curr_angle_rat.z;
+    rat_and_ref[3] = _rate_target_ang_vel.x;
+    rat_and_ref[4] = _rate_target_ang_vel.y;
+    rat_and_ref[5] = _rate_target_ang_vel.z;
+}
+
 // Calculates the body frame angular velocities to follow the target attitude
 void AC_AttitudeControl::attitude_controller_run_quat()
 {
@@ -383,6 +400,13 @@ void AC_AttitudeControl::attitude_controller_run_quat()
     // TODO add _ahrs.get_quaternion()
     Quaternion attitude_vehicle_quat;
     attitude_vehicle_quat.from_rotation_matrix(_ahrs.get_rotation_body_to_ned());
+
+    //=========== record angle target and actual angle =================
+    // float angle_data[6];
+    // attitude_vehicle_quat.to_euler(angle_data[0],angle_data[1], angle_data[2]);
+    // _attitude_target_quat.to_euler(angle_data[3],angle_data[4], angle_data[5]);
+    // writeCSV(angles_output, AP_HAL::micros64(), angle_data, 6);
+    //==================================================================
 
     // Compute attitude error
     Vector3f attitude_error_vector;

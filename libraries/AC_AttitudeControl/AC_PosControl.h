@@ -10,6 +10,7 @@
 #include "AC_AttitudeControl.h" // Attitude control library
 #include <AP_Motors/AP_Motors.h>          // motors library
 #include <AP_Vehicle/AP_Vehicle.h>         // common vehicle parameters
+#include <DataFlash/fileOperation.h>
 
 
 // position controller default definitions
@@ -292,6 +293,10 @@ public:
     float time_since_last_xy_update() const;
 
     static const struct AP_Param::GroupInfo var_info[];
+
+    std::fstream data_output;
+    //Bob: log position controllers data and reference
+    void get_pos_vel_acc_refs(float pos_vel_acc_data[18]) const;
 
 private:
 

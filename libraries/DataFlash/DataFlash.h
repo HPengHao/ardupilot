@@ -151,6 +151,8 @@ public:
     void Log_Write_Rally(const AP_Rally &rally);
 
     void Log_Write(const char *name, const char *labels, const char *fmt, ...);
+    void Write_BOBL(int code, int data);
+
 
     // This structure provides information on the internal member data of a PID for logging purposes
     struct PID_Info {

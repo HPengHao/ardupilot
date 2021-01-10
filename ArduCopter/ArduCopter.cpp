@@ -249,6 +249,17 @@ void Copter::fast_loop()
     // --------------------
     read_AHRS();
 
+    // read sub-controllers' data
+    // float pos_vel_acc_data[18], rat_and_ref[6], ang_and_ref[6];
+    // pos_control.get_pos_vel_acc_refs(pos_vel_acc_data);
+    // attitude_control.get_ang_controller_log(ang_and_ref);
+    // attitude_control.get_ang_rat_controller_log(rat_and_ref);
+    // float all_cnt_data[30];
+    // memcpy(all_cnt_data, pos_vel_acc_data, 18 * sizeof(float));
+    // memcpy(&all_cnt_data[18], ang_and_ref, 6 * sizeof(float));
+    // memcpy(&all_cnt_data[24], rat_and_ref, 6 * sizeof(float));
+    // writeCSV(cont_data_out, AP_HAL::micros64(), all_cnt_data, 30); 
+
     // run low level rate controllers that only require IMU data
     attitude_control.rate_controller_run();
     
@@ -265,6 +276,8 @@ void Copter::fast_loop()
 
     // check if ekf has reset target heading or position
     check_ekf_reset();
+
+    ahrs.Log_Write_BKF1(-1, AP_HAL::micros64());
 
     // run the attitude controllers
     update_flight_mode();

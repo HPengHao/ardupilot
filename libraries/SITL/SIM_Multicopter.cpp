@@ -18,7 +18,6 @@
 
 #include "SIM_Multicopter.h"
 #include <AP_Motors/AP_Motors.h>
-#include "fileOperation.h"
 #include <AP_LogCompression/AP_LogCompression.h>
 
 #include <stdio.h>

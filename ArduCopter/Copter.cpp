@@ -281,10 +281,10 @@ void Copter::fast_loop()
     if(scheduler.ticks() % 400 == 0){
         AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
     }
-    if(scheduler.ticks() % 20 == 0){
-        AP::logger().Write_BOBL(8, (int)AP::logger().num_requested()); // 8: requested log points
-        AP::logger().Write_BOBL(9, (int)AP::logger().num_dropped()); // 9: dropped log points
-    }
+    // if(scheduler.ticks() % 20 == 0){
+    //     AP::logger().Write_BOBL(8, (int)AP::logger().num_requested()); // 8: requested log points
+    //     AP::logger().Write_BOBL(9, (int)AP::logger().num_dropped()); // 9: dropped log points
+    // }
     //========================================================
 
     // run the attitude controllers

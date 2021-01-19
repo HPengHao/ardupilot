@@ -55,10 +55,14 @@ MultiCopter::MultiCopter(const char *frame_str) :
         printf("\n");
         is_origin_model = (int)config_data[0][0] == 1;
         is_add_disturb = (int)config_data[0][1] == 1;
+        if(is_add_disturb){
+            is_pos_disturb = (int)config_data[0][2] == 1;
+        }
+        is_log_SimStates = (int)config_data[0][3] == 1;
     }
     
     if(is_add_disturb){
-        std::string fileNo ="163"; // "00000284";
+        std::string fileNo ="00000217"; // "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -76,12 +80,21 @@ MultiCopter::MultiCopter(const char *frame_str) :
             printf("rotation disturb data lines: (%d, %d), %f\n", (int)disturb_data_rot.size(), (int) disturb_data_rot[0].size(), disturb_data_rot[0][0]);
         if(sync_data.size() > 0)
             printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
+        if(is_pos_disturb && (int) disturb_data_lin[0].size() < 5){
+            is_pos_disturb = false;
+        }
     }
 
     if(!is_origin_model){
         x[5] = M_PI/2; // in ENU frame
     }
-    
+    printf("is position based disturbance? %d\n", is_pos_disturb);
+
+    if(is_log_SimStates){
+        std::string log_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/log/";
+        uint16_t log_number = AP::logger().find_last_log() + 1;
+        states_output.open(log_folder + std::to_string(log_number) + "_SimData.csv",std::fstream::out);
+    }
 }
 
 void MultiCopter::add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel){
@@ -156,6 +169,14 @@ void MultiCopter::state_sycn_new2origin(){
     AP_LOGC::transfromENU2NED(x, x_NED);
     AP_LOGC::transfromENU2NED(dx, dx_NED);
 
+    if(is_log_SimStates){
+        uint64_t time_from_arm = time_now_us - arm_time;
+        if(time_from_arm - last_log_time_us > state_log_dt_us){
+            writeCSV(states_output, time_from_arm, x_NED, 12);
+            last_log_time_us = time_from_arm;
+        }
+    }
+
     position.x = x_NED[0];
     position.y = x_NED[1];
     position.z = x_NED[2];
@@ -195,6 +216,47 @@ void MultiCopter::state_sycn_new2origin(){
 
 }
 
+bool MultiCopter::get_pos_based_disturb(float lin_dist[3], float rot_dist[3], float pos_x, float pos_y, float pos_z) const {
+    float pre_cut_range = 3;
+    for (int i = 0; i < 2; i++){
+        float nearest_square_dist = 1000000;
+        float nearest_disturb[3] = {0};
+        for(std::vector<double> row_data : disturb_data_arr[i]){
+            if( abs((float)row_data[4] - pos_x) <= pre_cut_range &&
+                abs((float)row_data[5] - pos_y) <= pre_cut_range &&
+                abs((float)row_data[6] - pos_z) <= pre_cut_range){
+                float x_dist, y_dist, z_dist;
+                x_dist = ((float)row_data[4] - pos_x);
+                y_dist = ((float)row_data[5] - pos_y);
+                z_dist = ((float)row_data[6] - pos_z);
+                float square_dist =  x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
+                if(square_dist < nearest_square_dist){
+                    nearest_square_dist = square_dist;
+                    nearest_disturb[0] = row_data[1];
+                    nearest_disturb[1] = row_data[2];
+                    nearest_disturb[2] = row_data[3];
+                }
+                                   
+            }
+        }
+        if((int)nearest_square_dist == 1000000){
+            printf("No Disturbance data found in range %f meters\n", pre_cut_range);
+            return false;
+        }
+        if(i == 0){
+            lin_dist[0] = nearest_disturb[0];
+            lin_dist[1] = nearest_disturb[1];
+            lin_dist[2] = nearest_disturb[2];
+        }else{
+            rot_dist[0] = nearest_disturb[0];
+            rot_dist[1] = nearest_disturb[1];
+            rot_dist[2] = nearest_disturb[2];
+        }
+    }
+    return true;
+
+}
+
 void MultiCopter::new_model_step(const struct sitl_input &input){
     if(is_last_origin){
         state_sycn_origin2new();
@@ -223,32 +285,51 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     //2. add disturbance
     uint64_t time_from_armed = time_now_us - arm_time;
 
-    static uint idxs_dis[2] = {0};
-    for (int i = 0; i < 2; i++)
-    {
-        if(idxs_dis[i] < disturb_data_arr[i].size() && time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
-            while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
-                idxs_dis[i]++;
-                if(idxs_dis[i] >= disturb_data_arr[i].size()){
-                    break;
-                }
+    if(is_pos_disturb){
+        //position based disturbance
+        float skip_time = 3e6; //default 3s
+        if(time_from_armed > skip_time){
+            float lin_dist_temp[3], rot_dist_temp[3];
+            bool is_distb_found = get_pos_based_disturb(lin_dist_temp, rot_dist_temp, x[0], x[1], x[2]);
+            if(is_distb_found){
+                dx[6] +=   lin_dist_temp[1]; // acc_y
+                dx[7] +=   lin_dist_temp[0]; // acc_x
+                dx[8] += (-lin_dist_temp[2]); // -acc_z
+                dx[9] +=    rot_dist_temp[0]; // ang_acc_x
+                dx[10] += (-rot_dist_temp[1]); // -ang_acc_y
+                dx[11] += (-rot_dist_temp[2]); // -ang_acc_z
             }
-            if(idxs_dis[i] < disturb_data_arr[i].size()){
-                idxs_dis[i]--;// find the closest disturbance time less than time_now_us
-                //data in file is in NED frame, apply according to ENU frame
-                if(i == 0){
-                    dx[6] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
-                    dx[7] +=   disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
-                    dx[8] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -acc_z
-                }else{
-                    dx[9] +=    disturb_data_arr[i][idxs_dis[i]][1]; // ang_acc_x
-                    dx[10] += (-disturb_data_arr[i][idxs_dis[i]][2]); // -ang_acc_y
-                    dx[11] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -ang_acc_z
+        }
+    }else{
+        //Time based disturbance
+        static uint idxs_dis[2] = {0};
+        for (int i = 0; i < 2; i++)
+        {
+            if(idxs_dis[i] < disturb_data_arr[i].size() && time_from_armed > (uint64_t) disturb_data_arr[i][idxs_dis[i]][0]){
+                while((uint64_t) disturb_data_arr[i][idxs_dis[i]][0] < time_from_armed){
+                    idxs_dis[i]++;
+                    if(idxs_dis[i] >= disturb_data_arr[i].size()){
+                        break;
+                    }
                 }
-                
+                if(idxs_dis[i] < disturb_data_arr[i].size()){
+                    idxs_dis[i]--;// find the closest disturbance time less than time_now_us
+                    //data in file is in NED frame, apply according to ENU frame
+                    if(i == 0){
+                        dx[6] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
+                        dx[7] +=   disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
+                        dx[8] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -acc_z
+                    }else{
+                        dx[9] +=    disturb_data_arr[i][idxs_dis[i]][1]; // ang_acc_x
+                        dx[10] += (-disturb_data_arr[i][idxs_dis[i]][2]); // -ang_acc_y
+                        dx[11] += (-disturb_data_arr[i][idxs_dis[i]][3]); // -ang_acc_z
+                    }
+                    
+                }
             }
         }
     }
+    
     
 
     //3. update old states.

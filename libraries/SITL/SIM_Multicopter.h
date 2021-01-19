@@ -24,7 +24,7 @@
 #include "fileOperation.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
-#define RERUN_SIM_FRAME RERUN_SOLO 
+#define RERUN_SIM_FRAME RERUN_SIMQUAD
 
 namespace SITL {
 
@@ -44,6 +44,7 @@ public:
     }
 
     void add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel);
+    bool get_pos_based_disturb(float lin_dist[3], float rot_dist[3], float pos_x, float pos_y, float pos_z) const;
 
 protected:
     // calculate rotational and linear accelerations
@@ -59,6 +60,8 @@ protected:
     uint64_t arm_time;
     bool armed = false;
     bool is_last_origin = true;
+    bool is_pos_disturb = false; //position based disturbance
+    bool is_log_SimStates = false;
 private:
     //parameters
     float x[12] = {0}; //in ENU Frame
@@ -67,9 +70,14 @@ private:
     float dx_NED[12] = {0};
     float y_out[12] = {0};
     float u[4] = {0};
+    //========for states log============
+    float state_log_dt_us = 1.0F / 400.0F * 1e6;
+    float last_log_time_us = 0;
+    std::fstream states_output;
+    //==================================
 
 #if RERUN_SIM_FRAME == RERUN_SIMQUAD
-    =========SimQuad Parameters===========
+    //=========SimQuad Parameters===========
     float a = 0.128364;
     float b = 0.128364;
     float c = 0.128364;

@@ -61,7 +61,7 @@ SimRover::SimRover(const char *frame_str) :
     printf("frame time in us: %d\n", (int)frame_time_us);
     
     if(is_add_disturb){
-        std::string fileNo = "00000269";
+        std::string fileNo = "00000263";
 #if RERUN_SIM_FRAME == RERUN_SIMROVER        
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/";
 #elif RERUN_SIM_FRAME == RERUN_ERLEROVER
@@ -385,9 +385,9 @@ void SimRover::new_model_step(const struct sitl_input &input){
             x[i] = x_bf[i]; //only synchronize x,y, yaw value
         }
         
-        float sync_interval = 0.5; //Unit: s, min: 0.1s
+        float sync_interval = 0.1; //Unit: s, min: 0.1s
         
-        idx += (int)(sync_interval * 10); // sync every 1s
+        idx += (int)(sync_interval * 10); // default: sync every 1s
     }
 #endif
 

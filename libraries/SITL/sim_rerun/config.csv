@@ -1,2 +1,2 @@
-origin_model,add_disturb
-0, 1
+origin_model,add_disturb,pos_disturb,sim_states_log
+1, 0, 0, 1

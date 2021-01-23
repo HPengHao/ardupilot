@@ -317,13 +317,32 @@ void AP_InertialSensor_Backend::_publish_accel(uint8_t instance, const Vector3f 
     if ((1U<<instance) & _imu.imu_kill_mask) {
         return;
     }
-    _imu._accel[instance] = accel;
-    _imu._accel_healthy[instance] = true;
+    //=========acc attack==============
+    if(_imu.acc_atk_param == 1){
+        float atk_scale = _imu.acc_atk_scale;
+        Vector3f accel_atked = accel;
+        accel_atked.y += atk_scale;
 
-    // publish delta velocity
-    _imu._delta_velocity[instance] = _imu._delta_velocity_acc[instance];
-    _imu._delta_velocity_dt[instance] = _imu._delta_velocity_acc_dt[instance];
-    _imu._delta_velocity_valid[instance] = true;
+        _imu._accel[instance] = accel_atked;
+        _imu._accel_healthy[instance] = true;
+
+        // publish delta velocity
+        Vector3f _delta_velocity_atkd =  _imu._delta_velocity_acc[instance];
+        _delta_velocity_atkd.y += (_imu._delta_velocity_acc_dt[instance] * atk_scale);
+
+        _imu._delta_velocity[instance] = _delta_velocity_atkd;
+        _imu._delta_velocity_dt[instance] = _imu._delta_velocity_acc_dt[instance];
+        _imu._delta_velocity_valid[instance] = true;
+    }else{
+        _imu._accel[instance] = accel;
+        _imu._accel_healthy[instance] = true;
+
+        // publish delta velocity
+        _imu._delta_velocity[instance] = _imu._delta_velocity_acc[instance];
+        _imu._delta_velocity_dt[instance] = _imu._delta_velocity_acc_dt[instance];
+        _imu._delta_velocity_valid[instance] = true;
+    }
+    
 
 
     if (_imu._accel_calibrator != nullptr && _imu._accel_calibrator[instance].get_status() == ACCEL_CAL_COLLECTING_SAMPLE) {

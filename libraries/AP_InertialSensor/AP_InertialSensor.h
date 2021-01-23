@@ -199,6 +199,8 @@ public:
     AP_Float gps_atk_rate;
     AP_Int8 inter_smp_atk_param;
     AP_Float inter_smp_atk_scale;
+    AP_Int8 acc_atk_param;
+    AP_Float acc_atk_scale;
 
     // set overall board orientation
     void set_board_orientation(enum Rotation orientation, Matrix3f* custom_rotation = nullptr) {

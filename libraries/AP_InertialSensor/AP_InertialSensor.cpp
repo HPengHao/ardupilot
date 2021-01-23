@@ -485,6 +485,20 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Values: gyroscope fix value
     AP_GROUPINFO("STL_ATK_P",  45, AP_InertialSensor, gps_atk_rate, 1.0f),
 
+    // @Param: ACC_ATK
+    // @DisplayName: accelerometer attack trigger
+    // @Description: accelerometer attack trigger
+    // @User: Advanced
+    // @Values: true or false
+    AP_GROUPINFO("ACC_ATK",  46, AP_InertialSensor, acc_atk_param, 0),
+
+    // @Param: ACC_ATK_P
+    // @DisplayName: accelerometer attack scale
+    // @Description: accelerometer attack scale
+    // @User: Advanced
+    // @Values: accele adding number
+    AP_GROUPINFO("ACC_ATK_P",  47, AP_InertialSensor, acc_atk_scale, 2.0f),
+
     /*
       NOTE: parameter indexes have gaps above. When adding new
       parameters check for conflicts carefully

@@ -21,7 +21,7 @@
 #include <AP_LogCompression/AP_LogCompression.h>
 
 #include <stdio.h>
-#define USE_SCYN_SIM 1
+#define USE_SCYN_SIM 0
 using namespace SITL;
 
 MultiCopter::MultiCopter(const char *frame_str) :
@@ -62,7 +62,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
     }
     
     if(is_add_disturb){
-        std::string fileNo ="00000217"; // "00000284";
+        std::string fileNo ="00000464"; // "00000284";
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
         
         std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -92,8 +92,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
 
     if(is_log_SimStates){
         std::string log_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/log/";
-        uint16_t log_number = AP::logger().find_last_log() + 1;
-        states_output.open(log_folder + std::to_string(log_number) + "_SimData.csv",std::fstream::out);
+        states_output.open(log_folder + "_SimData.csv",std::fstream::out);
     }
 }
 

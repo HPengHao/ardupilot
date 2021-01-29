@@ -1,2 +1,2 @@
-origin_model,add_disturb,pos_disturb,sim_states_log
-0, 1, 0, 0
+origin_model,add_disturb,pos_disturb,sim_states_log,replace_euler,replace_gyro
+0,                0,          0,          0,            1,            0

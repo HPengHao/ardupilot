@@ -385,6 +385,8 @@ public:
     // write EKF information to on-board logs
     void Log_Write();
 
+    void updateStatesFromEurle(float roll, float pitch, float yaw);
+
 private:
     uint8_t num_cores; // number of allocated cores
     uint8_t primary;   // current primary core

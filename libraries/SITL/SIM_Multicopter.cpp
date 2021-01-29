@@ -59,31 +59,37 @@ MultiCopter::MultiCopter(const char *frame_str) :
             is_pos_disturb = (int)config_data[0][2] == 1;
         }
         is_log_SimStates = (int)config_data[0][3] == 1;
+        is_replace_euler = (int)config_data[0][4] == 1;
+        is_replace_gyro = (int)config_data[0][5] == 1;
     }
+
+    std::string fileNo ="00000483"; // "00000284";
+    std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
     
+    std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
+    std::string rot_disturb_filePath = data_folder + fileNo + "_disturb_rot.csv";
+
     if(is_add_disturb){
-        std::string fileNo ="00000487"; // "00000284";
-        std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
-        
-        std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
-        std::string rot_disturb_filePath = data_folder + fileNo + "_disturb_rot.csv";
-        std::string syn_filePath = data_folder + fileNo + "_syn.csv";
         readCSV(lin_disturb_filePath, disturb_data_lin);
         readCSV(rot_disturb_filePath, disturb_data_rot);
         disturb_data_arr[0] = disturb_data_lin;
         disturb_data_arr[1] = disturb_data_rot;
-
-        readCSV(syn_filePath, sync_data);
         if(disturb_data_lin.size() > 0)
             printf("linear disturb data lines: (%d, %d), %f\n", (int)disturb_data_lin.size(), (int) disturb_data_lin[0].size(), disturb_data_lin[0][0]);
         if(disturb_data_rot.size() > 0)
             printf("rotation disturb data lines: (%d, %d), %f\n", (int)disturb_data_rot.size(), (int) disturb_data_rot[0].size(), disturb_data_rot[0][0]);
-        if(sync_data.size() > 0)
-            printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
         if(is_pos_disturb && (int) disturb_data_lin[0].size() < 5){
             is_pos_disturb = false;
         }
     }
+
+    if(is_add_disturb || is_replace_gyro || is_replace_euler){
+        std::string syn_filePath = data_folder + fileNo + "_syn.csv";
+        readCSV(syn_filePath, sync_data);
+        if(sync_data.size() > 0)
+            printf("sycn data lines: (%d, %d), %f\n", (int)sync_data.size(), (int) sync_data[0].size(), sync_data[0][0]);
+    }
+    
 
     if(!is_origin_model){
         x[5] = M_PI/2; // in ENU frame
@@ -281,9 +287,106 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
         dx[9 + i] += -x[9 + i] * radians(400.0) / frame->terminal_rotation_rate;
     }
 #endif    
-    //2. add disturbance
+    
     uint64_t time_from_armed = time_now_us - arm_time;
+    //2. add disturbance
+    add_model_disturbance(time_from_armed);
+    
+    //3. update old states.
+    AP_LOGC::updateState(x, dx, dt); 
 
+#if USE_SCYN_SIM == 1
+    //4. test if we need synchronization. If so, synchronize.
+    sync_model(time_from_armed);
+#endif
+
+    //5. test if we need states replacement, if so, replace.
+    if (is_replace_euler || is_replace_gyro){
+        replace_model_states(time_from_armed);
+    }
+    
+    //6. sycn with origin model variables
+    state_sycn_new2origin();
+
+}
+
+void MultiCopter::replace_model_states(uint64_t time_from_armed){
+    float skip_time = 18e6;
+    if(time_from_armed < skip_time){
+        return;
+    }
+    static uint idx = 0;
+    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+        while(time_from_armed >= (uint64_t)sync_data[idx][0]){
+            idx++;
+            if(idx >= sync_data.size()){
+                return;
+            }
+        }
+        idx--;
+        for (size_t i = 0; i < 12; i++)
+        {
+            x_NED[i] = sync_data[idx][i+1];
+        }
+        float x_ENU[12] = {0};
+        AP_LOGC::transfromNED2ENU(x_NED, x_ENU);
+        if(is_replace_euler){
+            for (size_t i = 3; i < 6; i++)
+            {
+                x[i] = x_ENU[i]; // synchronize roll pitch yaw
+            }
+            copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
+        }
+        
+        // for (size_t i = 0; i < 3; i++)
+        // {
+        //     x[i] = x_ENU[i]; // synchronize x,y,z value
+        // }
+    }
+}
+
+void MultiCopter::sync_model(uint64_t time_from_armed){
+    static uint idx = 0;
+    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+        while(time_from_armed >= (uint64_t)sync_data[idx][0]){
+            idx++;
+            if(idx >= sync_data.size()){
+                break;
+            }
+        }
+        idx--;
+        for (size_t i = 0; i < 12; i++)
+        {
+            x_NED[i] = sync_data[idx][i+1];
+        }
+
+        float x_ENU[12] = {0};
+        AP_LOGC::transfromNED2ENU(x_NED, x_ENU);
+
+        for (size_t i = 0; i < 3; i++)
+        {
+            x[i] = x_ENU[i]; // synchronize x,y,z value
+        }
+
+        for (size_t i = 3; i < 6; i++)
+        {
+            x[i] = x_ENU[i]; // synchronize roll pitch yaw
+        }
+
+        // copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
+
+        // for (size_t i = 9; i < 12; i++)
+        // {
+        //     x[i] = x_ENU[i]; // synchronize roll pitch yaw rate
+        // }
+
+        float sync_interval = 1; //Unit: s, min: 0.1s
+        
+        idx += (int)(sync_interval * 10); // sync every 1s
+    }
+}
+
+void MultiCopter::add_model_disturbance(uint64_t time_from_armed){
     if(is_pos_disturb){
         //position based disturbance
         float skip_time = 3e6; //default 3s
@@ -328,51 +431,6 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
             }
         }
     }
-    
-    
-
-    //3. update old states.
-    AP_LOGC::updateState(x, dx, dt); 
-
-    //4. test if we need synchronization. If so, synchronize.
-
-#if USE_SCYN_SIM == 1
-    static uint idx = 0;
-    
-    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
-        while(time_from_armed >= (uint64_t)sync_data[idx][0]){
-            idx++;
-            if(idx >= sync_data.size()){
-                break;
-            }
-        }
-        idx--;
-        for (size_t i = 0; i < 12; i++)
-        {
-            x_NED[i] = sync_data[idx][i+1];
-        }
-
-        float x_ENU[12] = {0};
-        AP_LOGC::transfromNED2ENU(x_NED, x_ENU);
-
-        for (size_t i = 0; i < 3; i++)
-        {
-            x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
-        }
-
-        // for (size_t i = 9; i < 12; i++)
-        // {
-        //     x[i] = x_ENU[i]; //only synchronize x,y,z, r,p,y value
-        // }
-
-        float sync_interval = 1; //Unit: s, min: 0.1s
-        
-        idx += (int)(sync_interval * 10); // sync every 1s
-    }
-#endif
-    //5. sycn with origin model variables
-    state_sycn_new2origin();
-
 }
     
 /*

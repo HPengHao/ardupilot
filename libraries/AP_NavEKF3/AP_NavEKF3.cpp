@@ -1219,6 +1219,14 @@ void NavEKF3::getVariances(int8_t instance, float &velVar, float &posVar, float 
     }
 }
 
+void NavEKF3::updateStatesFromEurle(float roll, float pitch, float yaw){
+    if (core) {
+        for (uint8_t i=0; i<num_cores; i++) {
+            core[i].updateStatesFromEurle(roll, pitch, yaw);
+        }
+    }
+}
+
 // return the diagonals from the covariance matrix for the specified instance
 void NavEKF3::getStateVariances(int8_t instance, float stateVar[24]) const
 {

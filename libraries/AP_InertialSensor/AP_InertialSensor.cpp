@@ -480,7 +480,7 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
 
     // @Param: STL_ATK_P
     // @DisplayName: GPS stealthy attack scale
-    // @Description: GPS attack drafting rate, 1 --> 0.25m/s
+    // @Description: GPS attack drifting rate, 1 --> 0.25m/s
     // @User: Advanced
     // @Values: gyroscope fix value
     AP_GROUPINFO("STL_ATK_P",  45, AP_InertialSensor, gps_atk_rate, 1.0f),

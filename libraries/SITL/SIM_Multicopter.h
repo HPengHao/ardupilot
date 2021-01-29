@@ -22,6 +22,7 @@
 #include "SIM_Motor.h"
 #include "SIM_Frame.h"
 #include "fileOperation.h"
+#include "../ArduCopter/Copter.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
 #define RERUN_SIM_FRAME RERUN_SIMQUAD
@@ -45,6 +46,9 @@ public:
 
     void add_disturb_forces(const struct sitl_input &input, Vector3f &rot_accel, Vector3f &body_accel);
     bool get_pos_based_disturb(float lin_dist[3], float rot_dist[3], float pos_x, float pos_y, float pos_z) const;
+    void add_model_disturbance(uint64_t time_from_armed);
+    void sync_model(uint64_t time_from_armed);
+    void replace_model_states(uint64_t time_from_armed);
 
 protected:
     // calculate rotational and linear accelerations
@@ -62,6 +66,8 @@ protected:
     bool is_last_origin = true;
     bool is_pos_disturb = false; //position based disturbance
     bool is_log_SimStates = false;
+    bool is_replace_euler = false;
+    bool is_replace_gyro = false;
 private:
     //parameters
     float x[12] = {0}; //in ENU Frame

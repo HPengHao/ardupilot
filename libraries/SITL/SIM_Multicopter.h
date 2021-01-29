@@ -22,7 +22,7 @@
 #include "SIM_Motor.h"
 #include "SIM_Frame.h"
 #include "fileOperation.h"
-#include "../ArduCopter/Copter.h"
+// #include "../ArduCopter/Copter.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
 #define RERUN_SIM_FRAME RERUN_SIMQUAD

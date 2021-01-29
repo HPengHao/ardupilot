@@ -106,6 +106,9 @@ public:
     // true when motors are active
     bool motors_on;
 
+    //Bob: if angle replace is started?
+    bool is_start_eurle_sync = false;
+
     // height above ground
     float height_agl;
     

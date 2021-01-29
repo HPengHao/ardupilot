@@ -328,6 +328,8 @@ public:
     // return true when external nav data is also being used as a yaw observation
     bool isExtNavUsedForYaw(void);
 
+    void updateStatesFromEurle(float roll, float pitch, float yaw);
+
 private:
     // Reference to the global EKF frontend for parameters
     NavEKF2 *frontend;

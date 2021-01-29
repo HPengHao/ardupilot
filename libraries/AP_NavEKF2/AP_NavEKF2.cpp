@@ -1132,6 +1132,14 @@ bool NavEKF2::getHAGL(float &HAGL) const
     return core[primary].getHAGL(HAGL);
 }
 
+void NavEKF2::updateStatesFromEurle(float roll, float pitch, float yaw){
+    if (core) {
+        for (uint8_t i=0; i<num_cores; i++) {
+            core[i].updateStatesFromEurle(roll, pitch, yaw);
+        }
+    }
+}
+
 // return the Euler roll, pitch and yaw angle in radians for the specified instance
 void NavEKF2::getEulerAngles(int8_t instance, Vector3f &eulers) const
 {

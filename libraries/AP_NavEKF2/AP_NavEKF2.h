@@ -355,6 +355,8 @@ public:
     // check if external navigation is being used for yaw observation
     bool isExtNavUsedForYaw(void) const;
 
+    void updateStatesFromEurle(float roll, float pitch, float yaw);
+
 private:
     uint8_t num_cores; // number of allocated cores
     uint8_t primary;   // current primary core

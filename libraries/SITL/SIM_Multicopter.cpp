@@ -311,7 +311,7 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
 }
 
 void MultiCopter::replace_model_states(uint64_t time_from_armed){
-    float skip_time = 18e6;
+    float skip_time = 12e6;
     if(time_from_armed < skip_time){
         return;
     }
@@ -335,7 +335,10 @@ void MultiCopter::replace_model_states(uint64_t time_from_armed){
             {
                 x[i] = x_ENU[i]; // synchronize roll pitch yaw
             }
-            copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
+            if(!(sitl->is_start_eurle_sync)){
+                sitl->is_start_eurle_sync = true;
+            }
+            //copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
         }
         
         // for (size_t i = 0; i < 3; i++)

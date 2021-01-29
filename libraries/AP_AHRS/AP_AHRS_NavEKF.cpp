@@ -118,6 +118,18 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         update_EKF2();
     }
 
+//==============added by Bob to sync sitl============
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    if(_sitl != nullptr && _sitl->is_start_eurle_sync){
+        float rollRad = _sitl->state.rollDeg * DEG_TO_RAD;
+        float pitchRad = _sitl->state.pitchDeg * DEG_TO_RAD;
+        float yawRad = _sitl->state.yawDeg * DEG_TO_RAD;
+        EKF3.updateStatesFromEurle(rollRad, pitchRad, yawRad);
+        EKF2.updateStatesFromEurle(rollRad, pitchRad, yawRad);
+    }
+#endif
+//===================================================
+
 #if AP_MODULE_SUPPORTED
     // call AHRS_update hook if any
     AP_Module::call_hook_AHRS_update(*this);

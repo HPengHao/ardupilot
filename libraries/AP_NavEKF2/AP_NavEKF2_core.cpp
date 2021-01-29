@@ -631,6 +631,11 @@ void NavEKF2_core::UpdateFilter(bool predict)
     
 }
 
+void NavEKF2_core::updateStatesFromEurle(float roll, float pitch, float yaw){
+    stateStruct.quat.from_euler(roll, pitch, yaw);
+    outputDataNew.quat.from_euler(roll, pitch, yaw);
+}
+
 void NavEKF2_core::correctDeltaAngle(Vector3f &delAng, float delAngDT, uint8_t gyro_index)
 {
     delAng.x = delAng.x * stateStruct.gyro_scale.x;

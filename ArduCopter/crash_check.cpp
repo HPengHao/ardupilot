@@ -75,6 +75,12 @@ void Copter::crash_check()
 void Copter::thrust_loss_check()
 {
     static uint16_t thrust_loss_counter;  // number of iterations vehicle may have been crashed
+    
+//==========added by bob============
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    return;
+#endif
+//==================================
 
     // exit immediately if thrust boost is already engaged
     if (motors->get_thrust_boost()) {

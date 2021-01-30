@@ -63,7 +63,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
         is_replace_gyro = (int)config_data[0][5] == 1;
     }
 
-    std::string fileNo ="00000483"; // "00000284";
+    std::string fileNo ="159"; // "00000284";
     std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
     
     std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -311,7 +311,7 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
 }
 
 void MultiCopter::replace_model_states(uint64_t time_from_armed){
-    float skip_time = 12e6;
+    float skip_time = 20e6;
     if(time_from_armed < skip_time){
         return;
     }
@@ -336,9 +336,16 @@ void MultiCopter::replace_model_states(uint64_t time_from_armed){
                 x[i] = x_ENU[i]; // synchronize roll pitch yaw
             }
             if(!(sitl->is_start_eurle_sync)){
-                sitl->is_start_eurle_sync = true;
+                sitl->is_start_eurle_sync = true; //make ekf in controller to sync angles
             }
             //copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
+        }
+
+        if(is_replace_gyro){
+            for (size_t i = 9; i < 12; i++)
+            {
+                x[i] = x_ENU[i]; // synchronize roll pitch yaw rate
+            }
         }
         
         // for (size_t i = 0; i < 3; i++)
@@ -350,11 +357,15 @@ void MultiCopter::replace_model_states(uint64_t time_from_armed){
 
 void MultiCopter::sync_model(uint64_t time_from_armed){
     static uint idx = 0;
-    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+    static uint next_sync_time_us = 0;
+    if(idx < sync_data.size() 
+        && time_from_armed >= (uint64_t)sync_data[idx][0] 
+            &&time_from_armed >= next_sync_time_us){
+
         while(time_from_armed >= (uint64_t)sync_data[idx][0]){
             idx++;
             if(idx >= sync_data.size()){
-                break;
+                return;
             }
         }
         idx--;
@@ -383,9 +394,12 @@ void MultiCopter::sync_model(uint64_t time_from_armed){
         //     x[i] = x_ENU[i]; // synchronize roll pitch yaw rate
         // }
 
-        float sync_interval = 1; //Unit: s, min: 0.1s
-        
-        idx += (int)(sync_interval * 10); // sync every 1s
+        float sync_interval = 0.1; //Unit: s, min: 0.1s
+
+        next_sync_time_us = time_from_armed + sync_interval * 1e6;
+        idx++; //this one has been used, skip
+
+        //idx += (int)(sync_interval * 10); // sync every 1s
     }
 }
 

@@ -25,7 +25,7 @@
 // #include "../ArduCopter/Copter.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
-#define RERUN_SIM_FRAME RERUN_SIMQUAD
+#define RERUN_SIM_FRAME RERUN_SOLO
 
 namespace SITL {
 

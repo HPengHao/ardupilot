@@ -61,9 +61,10 @@ MultiCopter::MultiCopter(const char *frame_str) :
         is_log_SimStates = (int)config_data[0][3] == 1;
         is_replace_euler = (int)config_data[0][4] == 1;
         is_replace_gyro = (int)config_data[0][5] == 1;
+        replace_start = (float)config_data[0][6];
     }
 
-    std::string fileNo ="159"; // "00000284";
+    std::string fileNo ="00000592"; // "00000284";
     std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
     
     std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -311,7 +312,7 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
 }
 
 void MultiCopter::replace_model_states(uint64_t time_from_armed){
-    float skip_time = 20e6;
+    float skip_time = replace_start * 1e6;
     if(time_from_armed < skip_time){
         return;
     }
@@ -382,10 +383,10 @@ void MultiCopter::sync_model(uint64_t time_from_armed){
             x[i] = x_ENU[i]; // synchronize x,y,z value
         }
 
-        for (size_t i = 3; i < 6; i++)
-        {
-            x[i] = x_ENU[i]; // synchronize roll pitch yaw
-        }
+        // for (size_t i = 3; i < 6; i++)
+        // {
+        //     x[i] = x_ENU[i]; // synchronize roll pitch yaw
+        // }
 
         // copter.ahrs.get_NavEKF3().updateStatesFromEurle(x_NED[3], x_NED[4], x_NED[5]);
 
@@ -394,7 +395,7 @@ void MultiCopter::sync_model(uint64_t time_from_armed){
         //     x[i] = x_ENU[i]; // synchronize roll pitch yaw rate
         // }
 
-        float sync_interval = 0.1; //Unit: s, min: 0.1s
+        float sync_interval = 1; //Unit: s, min: 0.1s
 
         next_sync_time_us = time_from_armed + sync_interval * 1e6;
         idx++; //this one has been used, skip
@@ -406,7 +407,7 @@ void MultiCopter::sync_model(uint64_t time_from_armed){
 void MultiCopter::add_model_disturbance(uint64_t time_from_armed){
     if(is_pos_disturb){
         //position based disturbance
-        float skip_time = 3e6; //default 3s
+        float skip_time = 1e6; //default 3s
         if(time_from_armed > skip_time){
             float lin_dist_temp[3], rot_dist_temp[3];
             bool is_distb_found = get_pos_based_disturb(lin_dist_temp, rot_dist_temp, x[0], x[1], x[2]);

@@ -201,6 +201,8 @@ public:
     AP_Float inter_smp_atk_scale;
     AP_Int8 acc_atk_param;
     AP_Float acc_atk_scale;
+    AP_Int8 gyro_atk_param;
+    AP_Float gyro_atk_scale;
 
     // set overall board orientation
     void set_board_orientation(enum Rotation orientation, Matrix3f* custom_rotation = nullptr) {

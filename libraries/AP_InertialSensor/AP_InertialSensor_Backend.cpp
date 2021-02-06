@@ -138,13 +138,32 @@ void AP_InertialSensor_Backend::_publish_gyro(uint8_t instance, const Vector3f &
     if ((1U<<instance) & _imu.imu_kill_mask) {
         return;
     }
-    _imu._gyro[instance] = gyro;
-    _imu._gyro_healthy[instance] = true;
 
-    // publish delta angle
-    _imu._delta_angle[instance] = _imu._delta_angle_acc[instance];
-    _imu._delta_angle_dt[instance] = _imu._delta_angle_acc_dt[instance];
-    _imu._delta_angle_valid[instance] = true;
+    if(_imu.gyro_atk_param == 1){
+        //=========== gradual gyro attack start ==============
+        Vector3f fake_gyro = gyro;
+        fake_gyro.x += _imu.gyro_atk_scale;
+        _imu._gyro[instance] = fake_gyro;
+        _imu._gyro_healthy[instance] = true;
+
+        // publish delta angle
+        Vector3f fake_delta_angle = _imu._delta_angle_acc[instance];
+        fake_delta_angle.x += (_imu.gyro_atk_scale * _imu._delta_angle_acc_dt[instance]);
+
+        _imu._delta_angle[instance] = fake_delta_angle;
+        _imu._delta_angle_dt[instance] = _imu._delta_angle_acc_dt[instance];
+        _imu._delta_angle_valid[instance] = true;
+    }else{
+        _imu._gyro[instance] = gyro;
+        _imu._gyro_healthy[instance] = true;
+
+        // publish delta angle
+        _imu._delta_angle[instance] = _imu._delta_angle_acc[instance];
+        _imu._delta_angle_dt[instance] = _imu._delta_angle_acc_dt[instance];
+        _imu._delta_angle_valid[instance] = true;
+    }
+
+    
 }
 
 #define LAUNCH_INTER_SAMPLE_ATTACK (_imu.check_inter_sample_atk() && AP_Scheduler::get_singleton()->inter_sample_atk)

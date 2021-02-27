@@ -489,6 +489,8 @@ private:
         CAL_REQUIRE_GPS = (1U<<0),
     };
     AP_Int16 _options;
+    AP_Int8 is_compass_atk;
+    AP_Float compass_atk_scale;
 
 #if COMPASS_CAL_ENABLED
     CompassCalibrator _calibrator[COMPASS_MAX_INSTANCES];

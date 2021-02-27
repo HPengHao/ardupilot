@@ -166,6 +166,19 @@ const AP_Param::GroupInfo AP_Baro::var_info[] = {
     AP_GROUPINFO("PROBE_EXT", 14, AP_Baro, _baro_probe_ext, HAL_BARO_PROBE_EXT_DEFAULT),
 #endif
 
+    // @Param: BARO_ATK
+    // @DisplayName: baro meter attack
+    // @Description: baro meter attack trigger
+    // @User: Advanced
+    AP_GROUPINFO("BARO_ATK", 15, AP_Baro, is_baro_atk, 0),
+
+    // @Param: BARO_ATK_P
+    // @DisplayName: baro meter attack, // 0.1 is about 1m/s offset change
+    // @Description: baro meter attack trigger
+    // @User: Advanced
+    AP_GROUPINFO("BARO_ATK_P", 16, AP_Baro, baro_atk_scale, 0.1),
+
+
     AP_GROUPEND
 };
 
@@ -765,6 +778,16 @@ void AP_Baro::update(void)
             if (sensors[i].alt_ok) {
                 sensors[i].altitude = altitude + _alt_offset_active;
             }
+
+            //============ Bob ======================
+            if(is_baro_atk){
+                if(i == 0){
+                    baro_atk_offset += baro_atk_scale;
+                }
+                sensors[i].altitude += baro_atk_offset;
+                
+            }
+            //=======================================
         }
         if (_hil.have_alt) {
             sensors[0].altitude = _hil.altitude;

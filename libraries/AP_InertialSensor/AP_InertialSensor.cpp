@@ -511,7 +511,7 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Description: gyroscope attack scale
     // @User: Advanced
     // @Values: x-axis gyroscope adding number
-    AP_GROUPINFO("GYRO_ATK_P",  49, AP_InertialSensor, gyro_atk_scale, 0.1f),
+    AP_GROUPINFO("GYRO_ATK_P",  49, AP_InertialSensor, gyro_atk_scale, 0.01f),
 
     /*
       NOTE: parameter indexes have gaps above. When adding new

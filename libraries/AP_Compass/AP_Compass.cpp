@@ -541,6 +541,18 @@ const AP_Param::GroupInfo Compass::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("OPTIONS", 43, Compass, _options, 0),
 
+    // @Param: ATK
+    // @DisplayName: Compass Attack
+    // @Description: Compass Attack trigger
+    // @User: Advanced
+    AP_GROUPINFO("ATK", 44, Compass, is_compass_atk, 0),
+
+    // @Param: ATK_P
+    // @DisplayName: Compass Attack Scale Param
+    // @Description: Compass Attack Scale Param
+    // @User: Advanced
+    AP_GROUPINFO("ATK_P", 45, Compass, compass_atk_scale, 0.2),
+
     AP_GROUPEND
 };
 

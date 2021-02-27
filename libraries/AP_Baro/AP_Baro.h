@@ -252,6 +252,9 @@ private:
     void _probe_i2c_barometers(void);
     AP_Int8                            _filter_range;  // valid value range from mean value
     AP_Int32                           _baro_probe_ext;
+    AP_Int8                             is_baro_atk;
+    AP_Float                            baro_atk_scale;
+    float                               baro_atk_offset = 0;
 
     // semaphore for API access from threads
     HAL_Semaphore_Recursive            _rsem;

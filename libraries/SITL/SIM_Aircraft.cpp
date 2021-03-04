@@ -316,6 +316,8 @@ void Aircraft::fill_fdm(struct sitl_fdm &fdm)
 {
     if (use_smoothing) {
         smooth_sensors();
+    }else{
+        smoothing.enabled = false;
     }
     fdm.timestamp_us = time_now_us;
     fdm.latitude  = location.lat * 1.0e-7;

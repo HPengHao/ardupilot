@@ -235,10 +235,11 @@ _options_for_frame = {
     },
     "X": {
         "waf_target": "bin/arducopter-quad",
+        "default_params_filename": "default_params/copter-X.parm",
         # this param set FRAME doesn't actually work because mavproxy
         # won't set a parameter unless it knows of it, and the param fetch happens asynchronously
-        "default_params_filename": "default_params/copter.parm",
-        "extra_mavlink_cmds": "param fetch frame; param set FRAME 1;",
+        # "default_params_filename": "default_params/copter.parm",
+        # "extra_mavlink_cmds": "param fetch frame; param set FRAME 1;",
     },
     "hexa": {
         "make_target": "sitl-hexa",

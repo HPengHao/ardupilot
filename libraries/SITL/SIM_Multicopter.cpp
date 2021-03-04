@@ -21,7 +21,7 @@
 #include <AP_LogCompression/AP_LogCompression.h>
 
 #include <stdio.h>
-#define USE_SCYN_SIM 0
+// #define USE_SCYN_SIM 1
 using namespace SITL;
 
 MultiCopter::MultiCopter(const char *frame_str) :
@@ -62,9 +62,11 @@ MultiCopter::MultiCopter(const char *frame_str) :
         is_replace_euler = (int)config_data[0][4] == 1;
         is_replace_gyro = (int)config_data[0][5] == 1;
         replace_start = (float)config_data[0][6];
+        is_sync_states = (int)config_data[0][7] == 1;
+        sync_end = (float)config_data[0][8];
     }
 
-    std::string fileNo ="00000598"; // "00000284";
+    std::string fileNo ="159"; // "00000284";
     std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
     
     std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";
@@ -296,10 +298,15 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     //3. update old states.
     AP_LOGC::updateState(x, dx, dt); 
 
-#if USE_SCYN_SIM == 1
+//#if USE_SCYN_SIM == 1
     //4. test if we need synchronization. If so, synchronize.
-    sync_model(time_from_armed);
-#endif
+    if(is_sync_states){
+        if(sync_end <=0 || time_from_armed < sync_end){
+            sync_model(time_from_armed);
+        }
+    }
+    
+//#endif
 
     //5. test if we need states replacement, if so, replace.
     if (is_replace_euler || is_replace_gyro){

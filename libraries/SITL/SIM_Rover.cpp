@@ -304,8 +304,9 @@ void SimRover::new_model_step(const struct sitl_input &input){
                 idxs_dis[i]--;
                 if(i == 0){
                     // writeInfo(info_output, time_now_us, std::to_string(disturb_data_arr[i][idxs_dis[i]][0]));
+                    //disturbance data is in ENU frame
                     dx[3] +=  disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
-                    // dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
+                    dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
                 }else{
                     dx[5] +=   disturb_data_arr[i][idxs_dis[i]][1]; // yaw_rate
                 }

@@ -25,7 +25,7 @@
 // #include "../ArduCopter/Copter.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
-#define RERUN_SIM_FRAME RERUN_SIMQUAD
+#define RERUN_SIM_FRAME RERUN_SOLO
 
 namespace SITL {
 
@@ -69,6 +69,8 @@ protected:
     bool is_replace_euler = false;
     bool is_replace_gyro = false;
     float replace_start = 0;
+    bool is_sync_states = false;
+    float  sync_end = -1;
 private:
     //parameters
     float x[12] = {0}; //in ENU Frame

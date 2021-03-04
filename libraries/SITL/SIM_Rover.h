@@ -62,6 +62,14 @@ private:
     bool is_last_origin = true;
     uint64_t arm_time;
     bool armed = false;
+    bool is_last_origin = true;
+    bool is_pos_disturb = false; //position based disturbance
+    bool is_log_SimStates = false;
+    bool is_replace_euler = false;
+    bool is_replace_gyro = false;
+    float replace_start = 0;
+    bool is_sync_states = false;
+    float  sync_end = -1;
 
     //parameters
     float x[6] = {0}; //velocity in body Frame, position in NED frame

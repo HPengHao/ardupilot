@@ -23,7 +23,6 @@
 #include "fileOperation.h"
 #include <AP_LogCompression/AP_LogCompression.h>
 #include <sys/stat.h>
-#define USE_SCYN_SIM 1
 
 namespace SITL {
 
@@ -56,6 +55,15 @@ SimRover::SimRover(const char *frame_str) :
         printf("\n");
         is_origin_model = (int)config_data[0][0] == 1;
         is_add_disturb = (int)config_data[0][1] == 1;
+        if(is_add_disturb){
+            is_pos_disturb = (int)config_data[0][2] == 1;
+        }
+        is_log_SimStates = (int)config_data[0][3] == 1;
+        is_replace_euler = (int)config_data[0][4] == 1;
+        is_replace_gyro = (int)config_data[0][5] == 1;
+        replace_start = (float)config_data[0][6];
+        is_sync_states = (int)config_data[0][7] == 1;
+        sync_end = (float)config_data[0][8];
     }
 
     printf("frame time in us: %d\n", (int)frame_time_us);
@@ -304,7 +312,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
                 idxs_dis[i]--;
                 if(i == 0){
                     // writeInfo(info_output, time_now_us, std::to_string(disturb_data_arr[i][idxs_dis[i]][0]));
-                    //disturbance data is in ENU frame
+                    //disturbance data is in NED frame, rover use NED frame for model
                     dx[3] +=  disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
                     dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
                 }else{
@@ -362,35 +370,36 @@ void SimRover::new_model_step(const struct sitl_input &input){
 
     //4. test if we need synchronization. If so, synchronize.
 
-#if USE_SCYN_SIM == 1
-    static uint idx = 0;
-    
-    if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
-        while(time_from_armed >= (uint64_t)sync_data[idx][0]){
-            idx++;
-            if(idx >= sync_data.size()){
-                break;
+    if(is_sync_states){
+        static uint idx = 0;
+
+        if(idx < sync_data.size() && time_from_armed >= (uint64_t)sync_data[idx][0] ){
+            while(time_from_armed >= (uint64_t)sync_data[idx][0]){
+                idx++;
+                if(idx >= sync_data.size()){
+                    break;
+                }
             }
-        }
-        idx--;
-        for (size_t i = 0; i < 6; i++)
-        {
-            y_out[i] = sync_data[idx][i+1];
-        }
+            idx--;
+            for (size_t i = 0; i < 6; i++)
+            {
+                y_out[i] = sync_data[idx][i+1];
+            }
 
-        float x_bf[6] = {0};
-        AP_LOGC::transfromef2bf_rover(y_out, x_bf);
+            float x_bf[6] = {0};
+            AP_LOGC::transfromef2bf_rover(y_out, x_bf);
 
-        for (size_t i = 0; i < 3; i++)
-        {
-            x[i] = x_bf[i]; //only synchronize x,y, yaw value
+            for (size_t i = 0; i < 3; i++)
+            {
+                x[i] = x_bf[i]; //only synchronize x,y, yaw value
+            }
+            
+            float sync_interval = 0.1; //Unit: s, min: 0.1s
+            
+            idx += (int)(sync_interval * 10); // default: sync every 1s
         }
-        
-        float sync_interval = 0.1; //Unit: s, min: 0.1s
-        
-        idx += (int)(sync_interval * 10); // default: sync every 1s
     }
-#endif
+    
 
     //5. update output values
     AP_LOGC::transfrombf2ef_rover(x, y_out);

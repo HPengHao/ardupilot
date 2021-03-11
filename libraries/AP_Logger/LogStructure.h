@@ -476,6 +476,15 @@ struct PACKED log_motors
   uint16_t motor2;
   uint16_t motor3;
   uint16_t motor4;
+  float rawAccX;
+  float rawAccY;
+  float rawAccZ;
+  float usedGPSX;
+  float usedGPSY;
+  float usedGPSZ;
+  float trueGPSX;
+  float trueGPSY;
+  float trueGPSZ;
 };
 
 struct PACKED log_clog_gt
@@ -1663,7 +1672,7 @@ struct PACKED log_Arm_Disarm {
     { LOG_CLOG_SYN_MSG, sizeof(log_Bob_EKF1), \
       "CSYN","Qfffffffffffffe","TimeUS,Roll,Pitch,Yaw,VN,VE,VD,dPD,PN,PE,PD,GX,GY,GZ,OH", "srrrnnnnmmmEEEm", "F0000000000000B" }, \
     { LOG_BOB_MOTOR_MSG, sizeof(log_motors), \
-      "BMTR", "QHHHH", "TimeUS,M1,M2,M3,M4", "s----", "F0000"},\
+      "BMTR", "QHHHHfffffffff", "TimeUS,M1,M2,M3,M4,AccX,AccY,AccZ,FN,FE,FD,N,E,D", "s----ooommmmmm", "F0000000000000"},\
     { LOG_CLOG_GT_MSG, sizeof(log_clog_gt), \
       "CLOG", "Qbf", "TimeUS,stateNo,value", "s--", "F00"},\
     { LOG_ADSB_MSG, sizeof(log_ADSB), \

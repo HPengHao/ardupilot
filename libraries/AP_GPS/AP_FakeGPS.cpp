@@ -31,6 +31,22 @@ const Location & AP_GPS::location() const{
     // return true_loc;
 }
 
+const Vector3f & AP_GPS::velocity() const{
+    const Vector3f &true_vel = velocity(primary_instance);
+    return get_fake_velocity(true_vel);
+}
+
+const Vector3f & AP_GPS::get_fake_velocity(const Vector3f& true_vel) const{
+    float gps_attack_scale =  _ins_bob->gps_atk_rate;
+    float offset_increase_rate = gps_attack_scale / 4;
+
+    (*fake_vel_ptr) = true_vel;
+    if(_ins_bob->check_stealthy_atk()){
+        fake_vel_ptr->y += offset_increase_rate;
+    }
+    return (*fake_vel_ptr);
+}
+
 const Location & AP_GPS::get_fake_location(const Location& true_loc) const{
 
 #if  STL_ATK_TYPE == 1

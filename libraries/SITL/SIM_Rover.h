@@ -62,7 +62,6 @@ private:
     bool is_last_origin = true;
     uint64_t arm_time;
     bool armed = false;
-    bool is_last_origin = true;
     bool is_pos_disturb = false; //position based disturbance
     bool is_log_SimStates = false;
     bool is_replace_euler = false;

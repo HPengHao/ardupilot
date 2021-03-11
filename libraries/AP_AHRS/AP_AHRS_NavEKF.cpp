@@ -1868,7 +1868,6 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
     Vector2f posNE;
     float posD;
     Vector3f velNED;
-    Vector3f gyroUnbias;
     float posDownDeriv;
     Location originLLH;
     switch (ekf_type()){
@@ -1897,9 +1896,12 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
     }
 
     
-    gyroUnbias = get_gyro();
+    Vector3f gyroUnbias = get_gyro();
+    Vector3f rawAccel = AP::ins().get_accel();
+    Vector3f used_gps =  originLLH.get_distance_NED(*(AP::gps().fake_loc_ptr));
+    Vector3f true_gps =  originLLH.get_distance_NED(AP::gps().location(AP::gps().primary_sensor()));
     
-    
+
     const struct log_Bob_EKF1 pkt{
         LOG_PACKET_HEADER_INIT(LOG_BOB_EKF_MSG),
         time_us : time_us,
@@ -1926,7 +1928,16 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
         motor1  : hal.rcout->read(0),
         motor2  : hal.rcout->read(1),
         motor3  : hal.rcout->read(2),
-        motor4  : hal.rcout->read(3)
+        motor4  : hal.rcout->read(3),
+        rawAccX : rawAccel.x,
+        rawAccY : rawAccel.y,
+        rawAccZ : rawAccel.z,
+        usedGPSX: used_gps.x,
+        usedGPSY: used_gps.y,
+        usedGPSZ: used_gps.z,
+        trueGPSX: true_gps.x,
+        trueGPSY: true_gps.y,
+        trueGPSZ: true_gps.z
     };
 
     if(AP::logger().is_compress_log()){
@@ -1946,7 +1957,6 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     Vector2f posNE;
     float posD;
     Vector3f velNED;
-    Vector3f gyroUnbias;
     float posDownDeriv;
     Location originLLH;
     switch (ekf_type()){
@@ -1975,8 +1985,10 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     }
 
     
-    gyroUnbias = get_gyro();
-    
+    Vector3f gyroUnbias = get_gyro();
+    Vector3f rawAccel = AP::ins().get_accel();
+    Vector3f used_gps =  originLLH.get_distance_NED(*(AP::gps().fake_loc_ptr));
+    Vector3f true_gps =  originLLH.get_distance_NED(AP::gps().location(AP::gps().primary_sensor()));
     
     const struct log_Bob_EKF1 pkt{
         LOG_PACKET_HEADER_INIT(LOG_BOB_EKF_MSG),
@@ -2004,7 +2016,16 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
         motor1  : hal.rcout->read(0),
         motor2  : hal.rcout->read(1),
         motor3  : hal.rcout->read(2),
-        motor4  : hal.rcout->read(3)
+        motor4  : hal.rcout->read(3),
+        rawAccX : rawAccel.x,
+        rawAccY : rawAccel.y,
+        rawAccZ : rawAccel.z,
+        usedGPSX: used_gps.x,
+        usedGPSY: used_gps.y,
+        usedGPSZ: used_gps.z,
+        trueGPSX: true_gps.x,
+        trueGPSY: true_gps.y,
+        trueGPSZ: true_gps.z
     };
 
     if(AP::logger().is_compress_log()){

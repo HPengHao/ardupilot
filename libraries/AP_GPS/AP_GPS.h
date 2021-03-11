@@ -243,9 +243,15 @@ public:
     const Vector3f &velocity(uint8_t instance) const {
         return state[instance].velocity;
     }
-    const Vector3f &velocity() const {
-        return velocity(primary_instance);
-    }
+
+    //=============GPS stealthy attack code==================
+    // const Vector3f &velocity() const {
+    //     return velocity(primary_instance);
+    // }
+    const Vector3f &velocity() const;
+    Vector3f * fake_vel_ptr = new Vector3f();
+    const Vector3f & get_fake_velocity(const Vector3f& true_vel) const;
+    //=======================================================
 
     // ground speed in m/s
     float ground_speed(uint8_t instance) const {

@@ -69,7 +69,7 @@ SimRover::SimRover(const char *frame_str) :
     printf("frame time in us: %d\n", (int)frame_time_us);
     
     if(is_add_disturb){
-        std::string fileNo = "00000263";
+        std::string fileNo = "00000166";
 #if RERUN_SIM_FRAME == RERUN_SIMROVER        
         std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/Rover/";
 #elif RERUN_SIM_FRAME == RERUN_ERLEROVER
@@ -316,7 +316,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
                     dx[3] +=  disturb_data_arr[i][idxs_dis[i]][1]; // acc_x
                     dx[4] +=   disturb_data_arr[i][idxs_dis[i]][2]; // acc_y
                 }else{
-                    dx[5] +=   disturb_data_arr[i][idxs_dis[i]][1]; // yaw_rate
+                    //dx[5] +=   disturb_data_arr[i][idxs_dis[i]][1]; // yaw_rate
                 }
                 
             }
@@ -342,29 +342,24 @@ void SimRover::new_model_step(const struct sitl_input &input){
     }
 
     //3. update old states.
+    float x_last[6] = {0};
     for (int i = 0; i < 6; i++)
     {
+        x_last[i] = x[i];
         x[i] += dx[i] * dt;
     }
     x[2] = wrap_2PI(x[2]);
 
-    //anormly checks
-    if(abs(x[3]) > 30){
-        printf("warning: foward speed too fast\n");
-        writeInfo(info_output, time_now_us,  "warning: foward speed too fast");
-        x[3] = x[3] > 0 ? 30 : -30;
-    }
-
-    if(abs(x[4]) > 30){
-        printf("warning: side speed too fast\n");
-        writeInfo(info_output, time_now_us,  "warning: side speed too fast");
-        x[4] = x[4] > 0 ? 30 : -30;
-    }
-
-    if(abs(x[5]) > 5){
-        printf("warning: yaw rate too fast\n");
-        writeInfo(info_output, time_now_us,  "warning: yaw rate too fast");
-        x[5] = x[5] > 0 ? 5 : -5;
+    //anormly velocity checks
+    float vel_thresh[3] = {4, 4, 1}; //body x, y, yaw velocity
+    for(int i = 3; i < 6; i++){
+        float thres =  vel_thresh[i-3];
+        if(abs(x[i]) > thres){
+            printf("warning: states %d exceed threshold\n", (i+1));
+            // writeInfo(info_output, time_now_us,  "warning: foward speed too fast");
+            x[i] = x[i] > 0 ? thres : -thres;
+            dx[i] = (x[i] - x_last[i])/dt;
+        }
     }
 
 
@@ -389,7 +384,7 @@ void SimRover::new_model_step(const struct sitl_input &input){
             float x_bf[6] = {0};
             AP_LOGC::transfromef2bf_rover(y_out, x_bf);
 
-            for (size_t i = 0; i < 3; i++)
+            for (size_t i = 0; i < 2; i++)
             {
                 x[i] = x_bf[i]; //only synchronize x,y, yaw value
             }

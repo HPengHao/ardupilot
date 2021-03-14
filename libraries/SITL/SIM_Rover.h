@@ -22,7 +22,7 @@
 #include "fileOperation.h"
 #define RERUN_SIMROVER 2
 #define RERUN_ERLEROVER 3
-#define RERUN_SIM_FRAME RERUN_ERLEROVER 
+#define RERUN_SIM_FRAME RERUN_SIMROVER 
 
 namespace SITL {
 

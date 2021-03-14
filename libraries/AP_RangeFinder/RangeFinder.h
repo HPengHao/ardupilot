@@ -176,6 +176,12 @@ private:
     float estimated_terrain_height;
     Vector3f pos_offset_zero;   // allows returning position offsets of zero for invalid requests
 
+    //============ Bob: range_finder_attack ===============
+
+    AP_Int8 is_rngfnd_atk;
+    AP_Float rngfnd_atk_scale;
+    //=====================================================
+
     void convert_params(void);
 
     void detect_instance(uint8_t instance, uint8_t& serial_instance);

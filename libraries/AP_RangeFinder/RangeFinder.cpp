@@ -148,6 +148,21 @@ const AP_Param::GroupInfo RangeFinder::var_info[] = {
     // @Path: AP_RangeFinder_Wasp.cpp
     AP_SUBGROUPVARPTR(drivers[9], "A_",  44, RangeFinder, backend_var_info[9]),
 #endif
+
+    // @Param: RNGFND_ATK
+    // @DisplayName: Range finder attack trigger
+    // @Description: Range finder attack trigger
+    // @User: Advanced
+    // @Values: true or false
+    AP_GROUPINFO("_ATK",  45, RangeFinder, is_rngfnd_atk, 0),
+
+    // @Param: RNGFND_ATK_P
+    // @DisplayName: Range finder attack scale
+    // @Description: Range finder attack scale
+    // @User: Advanced
+    // @Values: distance offset increaseing scale
+    AP_GROUPINFO("_ATK_P",  46, RangeFinder, rngfnd_atk_scale, 10.0f),
+
     
     AP_GROUPEND
 };
@@ -287,6 +302,10 @@ void RangeFinder::init(enum Rotation orientation_default)
  */
 void RangeFinder::update(void)
 {
+    static float offset = 0;
+    if(is_rngfnd_atk){
+        offset += rngfnd_atk_scale;
+    }
     for (uint8_t i=0; i<num_instances; i++) {
         if (drivers[i] != nullptr) {
             if (params[i].type == RangeFinder_TYPE_NONE) {
@@ -296,6 +315,9 @@ void RangeFinder::update(void)
                 continue;
             }
             drivers[i]->update();
+            //=============Bob: range finder attack===============
+            state[i].distance_cm += offset;
+            //====================================================
         }
     }
 #ifndef HAL_BUILD_AP_PERIPH

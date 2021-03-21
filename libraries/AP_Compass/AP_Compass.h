@@ -122,8 +122,14 @@ public:
     uint8_t get_count(void) const { return _compass_count; }
 
     /// Return the current field as a Vector3f in milligauss
-    const Vector3f &get_field(uint8_t i) const { return _state[i].field; }
+    //const Vector3f &get_field(uint8_t i) const { return _state[i].field; }
     const Vector3f &get_field(void) const { return get_field(get_primary()); }
+    
+
+    //================== Compass spoofing code =============
+    Vector3f* fake_mag_field = new Vector3f();
+    const Vector3f &get_field(uint8_t i) const;
+    //======================================================
 
     /// Return true if we have set a scale factor for a compass
     bool have_scale_factor(uint8_t i) const;

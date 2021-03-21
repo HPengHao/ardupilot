@@ -109,14 +109,6 @@ void AP_Compass_Backend::accumulate_sample(Vector3f &field, uint8_t instance,
                                            uint32_t max_samples)
 {
 
-    if(_compass.is_compass_atk){
-        //state.field.y += (_compass.compass_atk_scale * 1e3);
-        // state.field.x -= (_compass.compass_atk_scale * 1e3);
-
-        //===========equals to rotate vehicle 90 degress counter-clock wise========
-        field.rotate(ROTATION_YAW_90);
-    }
-
     /* rotate raw_field from sensor frame to body frame */
     rotate_field(field, instance);
 

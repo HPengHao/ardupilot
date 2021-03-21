@@ -551,7 +551,7 @@ const AP_Param::GroupInfo Compass::var_info[] = {
     // @DisplayName: Compass Attack Scale Param
     // @Description: Compass Attack Scale Param
     // @User: Advanced
-    AP_GROUPINFO("ATK_P", 45, Compass, compass_atk_scale, 0.2),
+    AP_GROUPINFO("ATK_P", 45, Compass, compass_atk_scale, 0.017),
 
     AP_GROUPEND
 };
@@ -1384,7 +1384,21 @@ bool Compass::have_scale_factor(uint8_t i) const
     }
     return true;
 }
-
+//==================Bob: compass spoofing ===================
+const Vector3f &Compass::get_field(uint8_t i) const{ 
+    *fake_mag_field = _state[i].field;
+    static float angle_offset = 0; //unit: rad
+    if(is_compass_atk){
+        if(i == _primary){
+            angle_offset += compass_atk_scale;
+        }
+    }
+    Matrix3f offset_rot_mat;
+    offset_rot_mat.from_euler(0, 0, angle_offset);
+    *fake_mag_field = offset_rot_mat * (*fake_mag_field);
+    return *fake_mag_field; 
+}
+//===========================================================
 
 // singleton instance
 Compass *Compass::_singleton;

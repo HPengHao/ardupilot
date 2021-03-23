@@ -142,14 +142,19 @@ void AP_InertialSensor_Backend::_publish_gyro(uint8_t instance, const Vector3f &
     if(_imu.gyro_atk_param == 1){
         //=========== gradual gyro attack start ==============
         Vector3f fake_gyro = gyro;
-        fake_gyro.x += _imu.gyro_atk_scale;
+        Vector3f fake_delta_angle = _imu._delta_angle_acc[instance];
+        #ifdef CRUISE_SPEED //stands for Rover
+            fake_gyro.z += _imu.gyro_atk_scale;
+            fake_delta_angle.z += (_imu.gyro_atk_scale * _imu._delta_angle_acc_dt[instance]);
+        #else //for drones
+            fake_gyro.x += _imu.gyro_atk_scale;
+            fake_delta_angle.x += (_imu.gyro_atk_scale * _imu._delta_angle_acc_dt[instance]);
+        #endif
+        
+
         _imu._gyro[instance] = fake_gyro;
         _imu._gyro_healthy[instance] = true;
-
         // publish delta angle
-        Vector3f fake_delta_angle = _imu._delta_angle_acc[instance];
-        fake_delta_angle.x += (_imu.gyro_atk_scale * _imu._delta_angle_acc_dt[instance]);
-
         _imu._delta_angle[instance] = fake_delta_angle;
         _imu._delta_angle_dt[instance] = _imu._delta_angle_acc_dt[instance];
         _imu._delta_angle_valid[instance] = true;
@@ -179,7 +184,11 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         //gcs().send_text(MAV_SEVERITY_INFO, "Low layer attack launched");
         (*_imu.fake_gyro_ptr) = gyro;
         float attack_value = _imu.inter_smp_atk_scale;
+        #ifdef CRUISE_SPEED //stands for rover
+        _imu.fake_gyro_ptr->z = attack_value;
+        #else
         _imu.fake_gyro_ptr->x = attack_value;
+        #endif
         gyro = (*_imu.fake_gyro_ptr);
     }
     //============================================================

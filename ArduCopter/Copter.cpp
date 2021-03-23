@@ -268,10 +268,14 @@ void Copter::fast_loop()
     const uint64_t start_evaluation = AP_HAL::micros64();
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL // SITL: 400Hz log
-    AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
+    AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, start_evaluation, motors->get_actuator_data());
 #else // Real machines: 100Hz log
     if(scheduler.ticks() % 4 == 0){ 
-        AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, AP_HAL::micros64(), motors->get_actuator_data());
+        AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, start_evaluation, motors->get_actuator_data());
+        if(scheduler.ticks() % 40 == 0){
+            AP::logger().Write_Baro(start_evaluation);
+            AP::logger().Write_Compass(start_evaluation);
+        }
     }
 #endif
     

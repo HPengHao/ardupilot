@@ -66,7 +66,7 @@ MultiCopter::MultiCopter(const char *frame_str) :
         sync_end = (float)config_data[0][8];
     }
 
-    std::string fileNo ="159"; // "00000284";
+    std::string fileNo ="267"; // "00000284";
     std::string data_folder = "/home/bob/ardupilot/libraries/SITL/sim_rerun/MultiCopter/";
     
     std::string lin_disturb_filePath = data_folder + fileNo + "_disturb_lin.csv";

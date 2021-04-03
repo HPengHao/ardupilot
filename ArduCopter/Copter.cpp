@@ -239,6 +239,33 @@ void Copter::fast_loop()
     // AP::logger().Write_BOBL(0);  // 0: start fast loop 
     // update INS immediately to get current gyro data populated
     ins.update();
+
+    //===========Bob: log ekf data, -1 means the primary core====
+    const uint64_t start_evaluation = AP_HAL::micros64();
+    const uint64_t imu_sample_time = AP::ins().get_last_update_usec();
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL // SITL: 400Hz log
+    if(start_evaluation > 5e6){
+        AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, imu_sample_time, motors->get_actuator_data());
+    }
+#else // Real machines: 100Hz log
+    if(scheduler.ticks() % 4 == 0){ 
+        AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, imu_sample_time, motors->get_actuator_data());
+        if(scheduler.ticks() % 40 == 0){
+            AP::logger().Write_Baro(imu_sample_time);
+            AP::logger().Write_Compass(imu_sample_time);
+        }
+    }
+#endif
+    const uint64_t end_evaluation = AP_HAL::micros64();
+    if(scheduler.ticks() % 400 == 0){
+        AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
+    }
+    // if(scheduler.ticks() % 20 == 0){
+    //     AP::logger().Write_BOBL(8, (int)AP::logger().num_requested()); // 8: requested log points
+    //     AP::logger().Write_BOBL(9, (int)AP::logger().num_dropped()); // 9: dropped log points
+    // }
+    //========================================================
+
     
     // run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
@@ -263,33 +290,6 @@ void Copter::fast_loop()
 
     // check if ekf has reset target heading or position
     check_ekf_reset();
-
-    //Bob: log ekf data, -1 means the primary core==========
-    const uint64_t start_evaluation = AP_HAL::micros64();
-
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL // SITL: 400Hz log
-    AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, start_evaluation, motors->get_actuator_data());
-#else // Real machines: 100Hz log
-    if(scheduler.ticks() % 4 == 0){ 
-        AP::ahrs_navekf().Log_Write_BKF1_W_Motors(-1, start_evaluation, motors->get_actuator_data());
-        if(scheduler.ticks() % 40 == 0){
-            AP::logger().Write_Baro(start_evaluation);
-            AP::logger().Write_Compass(start_evaluation);
-        }
-    }
-#endif
-    
-    
-    const uint64_t end_evaluation = AP_HAL::micros64();
-
-    if(scheduler.ticks() % 400 == 0){
-        AP::logger().Write_BOBL(19, (int)(end_evaluation-start_evaluation));
-    }
-    // if(scheduler.ticks() % 20 == 0){
-    //     AP::logger().Write_BOBL(8, (int)AP::logger().num_requested()); // 8: requested log points
-    //     AP::logger().Write_BOBL(9, (int)AP::logger().num_dropped()); // 9: dropped log points
-    // }
-    //========================================================
 
     // run the attitude controllers
     update_flight_mode();

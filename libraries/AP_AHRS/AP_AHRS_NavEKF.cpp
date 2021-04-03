@@ -1941,7 +1941,7 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
     };
 
     if(AP::logger().is_compress_log()){
-        AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN
+        //AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN
         AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
         //we need to log motors data anyway.
         AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));
@@ -2029,7 +2029,7 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     };
 
     if(AP::logger().is_compress_log()){
-        AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN log type
+        //AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN log type
         AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
         //we need to log motors data anyway.
         AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));

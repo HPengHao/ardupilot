@@ -34,6 +34,7 @@ def kill_tasks():
             try:
                 os.kill(pid, signal.SIGTERM)
                 print "killing ", line
+                time.sleep(0.1)
             except OSError:
                 print "already killed ", pid, line
 
@@ -307,7 +308,7 @@ def main():
     mainname = 'arducopter'     # system name
     init_time = 20              # waiting time for initialization
     real_sim_mode = True;       # simulation model: True: real, False: dummy sim
-    config = [0, 1, 1, 0, 1]
+    config = [1, 1, 1, 0, 1]
 
     for i in range(3):
         # start sim functions

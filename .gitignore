@@ -124,3 +124,6 @@ segv_*out
 /ArduSub/scripts/
 persistent.dat
 callgrind*
+Tools/autotest/online_cfg.p
+Tools/autotest/config_params.scr
+libraries/SITL/sim_rerun/MultiCopter/log/_SimData.csv

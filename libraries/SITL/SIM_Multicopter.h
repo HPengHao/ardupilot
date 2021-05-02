@@ -25,7 +25,7 @@
 // #include "../ArduCopter/Copter.h"
 #define RERUN_SIMQUAD 0
 #define RERUN_SOLO 1
-#define RERUN_SIM_FRAME RERUN_SOLO
+#define RERUN_SIM_FRAME RERUN_SIMQUAD
 
 namespace SITL {
 
@@ -83,6 +83,7 @@ private:
     float state_log_dt_us = 1.0F / 400.0F * 1e6;
     float last_log_time_us = 0;
     std::fstream states_output;
+    std::fstream crash_info_output;
     //==================================
 
 #if RERUN_SIM_FRAME == RERUN_SIMQUAD

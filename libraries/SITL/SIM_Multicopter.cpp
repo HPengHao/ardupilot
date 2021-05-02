@@ -46,6 +46,10 @@ MultiCopter::MultiCopter(const char *frame_str) :
     ground_behavior = GROUND_BEHAVIOR_NO_MOVEMENT;
 
     std::string config_filePath = "/home/bob/ardupilot/libraries/SITL/sim_rerun/config.csv";
+    std::string crash_info_path = "/home/bob/genetic/outputs/simout.log";
+    
+    crash_info_output.open(crash_info_path, std::fstream::out);
+
     readCSV(config_filePath, config_data);
     if(config_data.size() > 0){
         printf("Config data: ");
@@ -315,6 +319,27 @@ void MultiCopter::new_model_step(const struct sitl_input &input){
     
     //6. sycn with origin model variables
     state_sycn_new2origin();
+
+    //7. check crash
+    
+    if(std::abs(x[3]) > 40.0 * DEG_TO_RAD){
+        char buff[100];
+        snprintf(buff, sizeof(buff), "%.4f %d %s\n", (float)time_from_armed/1e6, 1, "EXTREME RLL");
+        std::string outstring = buff;
+        crash_info_output << outstring;
+    }
+    if(std::abs(x[4]) > 40.0 * DEG_TO_RAD){
+        char buff[100];
+        snprintf(buff, sizeof(buff), "%.4f %d %s\n", (float)time_from_armed/1e6, 1, "EXTREME PIT");
+        std::string outstring = buff;
+        crash_info_output << outstring;
+    }
+    if( x[8] < -3){
+        char buff[100];
+        snprintf(buff, sizeof(buff), "%.4f %d %s\n", (float)time_from_armed/1e6, 1, "EXTREME VEL_Z");
+        std::string outstring = buff;
+        crash_info_output << outstring;
+    }
 
 }
 

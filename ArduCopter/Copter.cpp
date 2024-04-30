@@ -235,7 +235,8 @@ void Copter::loop()
 // Main loop - 400hz //Bob: called in AP_Scheduler::loop()
 void Copter::fast_loop()
 {
-
+    //clock_t start, finish;//*****************
+    //start = clock();//*******************
     // AP::logger().Write_BOBL(0);  // 0: start fast loop 
     // update INS immediately to get current gyro data populated
     ins.update();
@@ -310,6 +311,15 @@ void Copter::fast_loop()
         Log_Sensor_Health();
     }
 
+    read_target_attitude();
+    //finish = clock();
+    //double duration = (double)(finish - start) / CLOCKS_PER_SEC * 1000;
+
+    //if(copter.arming.is_armed()){
+        //FILE *fp=fopen("/home/bob/time4.csv","a+");
+        //fprintf(fp,"%f\n",duration);
+        //fclose(fp);
+    //}//********************
     // AP::logger().Write_BOBL(1); // 1: end fast loop 
 }
 
@@ -674,3 +684,22 @@ Copter::Copter(void)
 Copter copter;
 
 AP_HAL_MAIN_CALLBACKS(&copter);
+
+/*
+zongxu_zhang
+read_target_attitude()函数用于曾荟铭工作
+*/
+void Copter::read_target_attitude(){
+    RECOVER::get_instance()->is_armed = copter.arming.is_armed();
+    RECOVER::get_instance()->targetpos.x = static_cast<float>(pos_control->get_pos_target().x);
+    RECOVER::get_instance()->targetpos.y = static_cast<float>(pos_control->get_pos_target().y);
+    RECOVER::get_instance()->targetpos.z = static_cast<float>(pos_control->get_pos_target().z);
+    RECOVER::get_instance()->targetvel = pos_control->get_vel_target();
+    RECOVER::get_instance()->targetangvel = attitude_control->read_target_angvel();
+    RECOVER::get_instance()->targetattitude = attitude_control->get_att_target_euler_cd();
+
+    //三个角度值的预测和判断
+    RECOVER::get_instance()->rollrecoevery(ahrs.roll_sensor);
+    RECOVER::get_instance()->pitchrecoevery(ahrs.pitch_sensor);
+    RECOVER::get_instance()->yawrecoevery(ahrs.yaw_sensor);
+}

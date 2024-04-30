@@ -21,6 +21,7 @@
 // Header includes
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <Sensor_Attack/recover.h>
 #include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
@@ -1006,6 +1007,8 @@ private:
 public:
     void mavlink_delay_cb();    // GCS_Mavlink.cpp
     void failsafe_check();      // failsafe.cpp
+
+    void read_target_attitude();
 };
 
 extern Copter copter;

@@ -479,6 +479,14 @@ public:
     float control_monitor_rms_output_pitch_D(void) const;
     float control_monitor_rms_output_pitch(void) const;
     float control_monitor_rms_output_yaw(void) const;
+    /*
+    zongxu_zhang
+    */
+    Vector3f read_target_angvel(void){return _attitude_target_ang_vel;};
+    Vector3f read_body_angvel(void){return _rate_target_ang_vel;};
+    float _roll_in;
+    float _pitch_in;
+    float _yaw_in;
 };
 
 #define AC_ATTITUDE_CONTROL_LOG_FORMAT(msg) { msg, sizeof(AC_AttitudeControl::log_Attitude),	\

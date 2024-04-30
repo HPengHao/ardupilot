@@ -33,16 +33,18 @@
 #include <AP_NavEKF2/AP_NavEKF2.h>
 #include <AP_NavEKF3/AP_NavEKF3.h>
 #include <AP_NavEKF/AP_Nav_Common.h>              // definitions shared by inertial and ekf nav filters
-
+ 
 
 #define AP_AHRS_NAVEKF_SETTLE_TIME_MS 20000     // time in milliseconds the ekf needs to settle after being started
 
 class AP_AHRS_NavEKF : public AP_AHRS_DCM {
+
 public:
     enum Flags {
         FLAG_NONE = 0,
         FLAG_ALWAYS_USE_EKF = 0x1,
     };
+    
 
     // Constructor
     AP_AHRS_NavEKF(NavEKF2 &_EKF2, NavEKF3 &_EKF3, Flags flags = FLAG_NONE);
@@ -163,6 +165,8 @@ public:
 
     // Write position and quaternion data from an external navigation system
     void writeExtNavData(const Vector3f &sensOffset, const Vector3f &pos, const Quaternion &quat, float posErr, float angErr, uint32_t timeStamp_ms, uint32_t resetTime_ms) override;
+   
+
 
     // inhibit GPS usage
     uint8_t setInhibitGPS(void);
@@ -269,7 +273,7 @@ public:
     void Log_Write();
 
     //Bob: logging customized ekf data by cores:
-    void Log_Write_BKF1_W_Motors(uint8_t core, uint64_t time_us, const float* motor_actuators_data) const;
+    void Log_Write_BKF1_W_Motors(uint8_t core, uint64_t time_us, const float* motor_actuators_data);
     void Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const;
 
     // check whether compass can be bypassed for arming check in case when external navigation data is available 

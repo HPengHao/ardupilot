@@ -22,6 +22,7 @@
 #include "AP_MotorsMulticopter.h"
 #include <AP_HAL/AP_HAL.h>
 #include <AP_BattMonitor/AP_BattMonitor.h>
+#include <AP_MotorCheck/AP_MotorCheck.h>
 
 extern const AP_HAL::HAL& hal;
 
@@ -211,6 +212,20 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     // @Increment: 0.001
     // @User: Advanced
     AP_GROUPINFO("SAFE_TIME", 42, AP_MotorsMulticopter, _safe_time, AP_MOTORS_SAFE_TIME_DEFAULT),
+    
+    // @Param: MOTOR_ATK
+    // @DisplayName: motor  attack
+    // @Description: motor attack trigger
+    // @User: Advanced
+    AP_GROUPINFO("MOTOR_ATK", 43, AP_MotorsMulticopter, is_motor_atk, 0),
+
+    // @Param: MOTOR_ATK_P
+    // @DisplayName: motor attack
+    // @Description: motor attack trigger
+    // @User: Advanced
+    AP_GROUPINFO("MOTOR_ATK_P", 44, AP_MotorsMulticopter, motor_atk_scale, 50),  
+
+
 
     AP_GROUPEND
 };
@@ -396,6 +411,52 @@ float AP_MotorsMulticopter::get_compensation_gain() const
 // convert actuator output (0~1) range to pwm range
 int16_t AP_MotorsMulticopter::output_to_pwm(float actuator)
 {
+    float pwm_output=0;
+    if (_spool_state == SpoolState::SHUT_DOWN) {
+        // in shutdown mode, use PWM 0 or minimum PWM
+        if (_disarm_disable_pwm && !armed()) {
+            pwm_output = 0;
+        } else {
+            pwm_output = get_pwm_output_min();
+        }
+    } else {
+        // in all other spool modes, covert to desired PWM
+         //=================== HPH ======================
+	
+	
+	
+        if(is_motor_atk){
+	    if(MotorCheck::first_check==true and MotorCheck::second_check==true)
+	    {
+		MotorCheck::door=true;
+		//if(MotorCheck::atk_flag[0]==true and MotorCheck::atk_flag[1]==true and MotorCheck::atk_flag[2]==true and MotorCheck::atk_flag[3]==true)
+		//if(MotorCheck::atk_flag[0]==true and MotorCheck::atk_flag[1]==true and MotorCheck::atk_flag[2]==true)
+		//if(MotorCheck::atk_flag[0]==true and MotorCheck::atk_flag[1]==true)
+		if(MotorCheck::atk_flag[0]==true)
+		{
+		    pwm_output = get_pwm_output_min() + (get_pwm_output_max() - get_pwm_output_min()) * actuator - motor_atk_scale + MotorCheck::atk_para;
+	        }
+		else
+		{
+		    pwm_output = get_pwm_output_min() + (get_pwm_output_max() - get_pwm_output_min()) * actuator - motor_atk_scale;
+	        }
+            	
+	    }
+	    else{
+	        pwm_output = get_pwm_output_min() + (get_pwm_output_max() - get_pwm_output_min()) * actuator - motor_atk_scale;
+	    }  
+        }else{
+            pwm_output = get_pwm_output_min() + (get_pwm_output_max() - get_pwm_output_min()) * actuator;
+        }
+         //============================================
+
+    }
+
+    return pwm_output;
+}
+
+int16_t AP_MotorsMulticopter::output_to_pwm1(float actuator)
+{
     float pwm_output;
     if (_spool_state == SpoolState::SHUT_DOWN) {
         // in shutdown mode, use PWM 0 or minimum PWM
@@ -406,12 +467,14 @@ int16_t AP_MotorsMulticopter::output_to_pwm(float actuator)
         }
     } else {
         // in all other spool modes, covert to desired PWM
+         
         pwm_output = get_pwm_output_min() + (get_pwm_output_max() - get_pwm_output_min()) * actuator;
+        
+
     }
 
     return pwm_output;
 }
-
 // converts desired thrust to linearized actuator output in a range of 0~1
 float AP_MotorsMulticopter::thrust_to_actuator(float thrust_in)
 {

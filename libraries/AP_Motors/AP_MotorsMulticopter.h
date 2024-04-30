@@ -121,7 +121,7 @@ protected:
 
     // convert actuator output (0~1) range to pwm range
     int16_t             output_to_pwm(float _actuator_output);
-
+    int16_t             output_to_pwm1(float _actuator_output);
     // converts desired thrust to linearized actuator output in a range of 0~1
     float               thrust_to_actuator(float thrust_in);
 
@@ -191,6 +191,10 @@ protected:
     float               _throttle_limit;        // ratio of throttle limit between hover and maximum
     float               _throttle_thrust_max;   // the maximum allowed throttle thrust 0.0 to 1.0 in the range throttle_min to throttle_max
     float               _disarm_safe_timer;     // Timer for the esc when transitioning between zero pwm to minimum
+    //=============HPH============================
+    AP_Int8             is_motor_atk;
+    AP_Int16            motor_atk_scale;
+
 
     // vehicle supplied callback for thrust compensation. Used for tiltrotors and tiltwings
     thrust_compensation_fn_t _thrust_compensation_callback;

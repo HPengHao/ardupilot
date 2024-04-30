@@ -234,7 +234,7 @@ def post_processing(simlog_id, config, system_name):
 
     if(system_name == 'arducopter'):
         # Simulation (raw BIN) log
-        last_sim_log = AUTOHOME + '/logs/LASTLOG.TXT'
+        last_sim_log = AUTO_HOME + '/logs/LASTLOG.TXT'
         if not os.path.isfile(last_sim_log):
             print "[ERROR]: Simulation was not exectued properly -- no LASTLOG.TXT file", last_sim_log
             exit()
@@ -302,13 +302,13 @@ def main():
 
     log_id = '000000_000001'    # log id 
     #COMMAND = "cd " + AUTOHOME + "; ./sim_vehicle.py -v ArduCopter -m --mav10 --map --console -I1 -D -K " + log_id 
-    COMMAND = "cd " + AUTOHOME + "; ./sim_vehicle.py -v ArduCopter -L PU -f X  --map --console -m --RVplayer"  
+    COMMAND = "cd " + AUTOHOME + "; ./sim_vehicle.py -v ArduCopter -L PU  --map --console "  #-m --RVplayer
     
     timeout = 100 + 60               # total allowed simulation time 
     mainname = 'arducopter'     # system name
     init_time = 20              # waiting time for initialization
     real_sim_mode = True;       # simulation model: True: real, False: dummy sim
-    config = [1, 1, 1, 0, 1]
+    config = [1, 1, 1, 1, 1]
 
     for i in range(3):
         # start sim functions

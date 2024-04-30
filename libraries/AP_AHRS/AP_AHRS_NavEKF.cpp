@@ -27,6 +27,7 @@
 #include <AP_GPS/AP_GPS.h>
 #include <AP_Baro/AP_Baro.h>
 #include <AP_LogCompression/AP_LogCompression.h>
+#include <AP_MotorCheck/AP_MotorCheck.h> 
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 
@@ -1860,7 +1861,7 @@ void AP_AHRS_NavEKF::Log_Write()
     get_NavEKF2().Log_Write();
     get_NavEKF3().Log_Write();
 }
-
+/*
 void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
 {
     // Write first EKF packet
@@ -1948,9 +1949,9 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_rover(uint8_t _core, uint64_t time_us) const
     }
     
 }
+*/
 
-
-void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, const float* motor_actuators_data) const
+void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, const float* motor_actuators_data) 
 {
     // Write first EKF packet
     Vector3f euler;
@@ -2013,10 +2014,10 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
     {
         LOG_PACKET_HEADER_INIT(LOG_BOB_MOTOR_MSG),
         time_us : time_us,
-        motor1  : hal.rcout->read(0),
-        motor2  : hal.rcout->read(1),
-        motor3  : hal.rcout->read(2),
-        motor4  : hal.rcout->read(3),
+        motor1  : (uint16_t)(1000+motor_actuators_data[0]*1000),
+        motor2  : (uint16_t)(1000+motor_actuators_data[1]*1000),
+        motor3  : (uint16_t)(1000+motor_actuators_data[2]*1000),
+        motor4  : (uint16_t)(1000+motor_actuators_data[3]*1000),
         rawAccX : rawAccel.x,
         rawAccY : rawAccel.y,
         rawAccZ : rawAccel.z,
@@ -2028,12 +2029,14 @@ void AP_AHRS_NavEKF::Log_Write_BKF1_W_Motors(uint8_t _core, uint64_t time_us, co
         trueGPSZ: true_gps.z
     };
 
-    if(AP::logger().is_compress_log()){
-        //AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN log type
-        AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
-        //we need to log motors data anyway.
-        AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));
-    }
+    
+    MotorCheck _MotorCheck;//*****
+    //AP_LOGC::compressionLog(pkt, pkt2);//CLOG, CSYN log type
+    AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
+    //we need to log motors data anyway.
+    AP::logger().WriteCriticalBlock(&pkt2, sizeof(pkt2));
+    _MotorCheck.firstCheck(pkt,pkt2);//*******
+    _MotorCheck.secondCheck();//*******
     
 }
 

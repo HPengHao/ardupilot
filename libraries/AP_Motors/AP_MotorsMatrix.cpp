@@ -20,7 +20,7 @@
  */
 #include <AP_HAL/AP_HAL.h>
 #include "AP_MotorsMatrix.h"
-
+#include <AP_MotorCheck/AP_MotorCheck.h>
 extern const AP_HAL::HAL& hal;
 
 // init
@@ -103,10 +103,23 @@ void AP_MotorsMatrix::output_to_motors()
             break;
     }
 
+    
     // convert output to PWM and send to each motor
     for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
         if (motor_enabled[i]) {
-            rc_write(i, output_to_pwm(_actuator[i]));
+            if(i == 0){
+                
+                //if(MotorCheck::second_check==true) 
+			//if(MotorCheck::door==false)
+			//{
+				//_actuator[i]+=0.25;
+				//MotorCheck::door=true;
+			//}
+		rc_write(i, output_to_pwm(_actuator[i]));					
+            }
+            else{
+                rc_write(i, output_to_pwm1(_actuator[i]));
+            }
         }
     }
 }
